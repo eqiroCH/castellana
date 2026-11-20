@@ -57,9 +57,9 @@ export function Services() {
                     media={service.image}
                     alt=""
                     sizes="(min-width: 1024px) 24vw, (min-width: 640px) 48vw, 100vw"
-                    className="size-full object-cover transition-transform duration-[1400ms] ease-out-quart group-hover:scale-[1.04]"
+                    className="size-full object-cover saturate-[0.8] transition-transform duration-[1400ms] ease-out-quart group-hover:scale-[1.04]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-transparent to-ink/30" />
                   <span className="absolute left-5 top-5 font-display text-lg text-paper/90 tabular" aria-hidden="true">
                     {String(i + 1).padStart(2, "0")}
                   </span>
