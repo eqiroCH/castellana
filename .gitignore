@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# image pipeline download cache
+/.cache/
+
+# local screenshots
+/screenshots/
