@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
 import { addressLine, site } from "@/content/site";
-import { ButtonLink } from "@/components/ui/Button";
+import { pageMetadata } from "@/lib/metadata";
+import { ContactDetails } from "@/components/contact/ContactDetails";
+import { LocationSection } from "@/components/contact/LocationSection";
+import { ContactForm } from "@/components/forms/ContactForm";
+import { JsonLd } from "@/components/layout/JsonLd";
 import { PageHero } from "@/components/sections/PageHero";
-import { Prose } from "@/components/sections/Prose";
-import { VisitBand } from "@/components/sections/VisitBand";
+import { ButtonLink } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Heading } from "@/components/ui/Heading";
+import { Reveal } from "@/components/ui/Reveal";
+import { Section } from "@/components/ui/Section";
 
-export const metadata: Metadata = {
-  title: "Kontakt",
-  description: `Kontakt & Anfahrt: ${site.name}, ${addressLine}. Telefon ${site.phone.display}, ${site.email.display}.`,
-  alternates: { canonical: "/kontakt/" },
-};
+const title = "Kontakt & Anfahrt";
+const description = `Probefahrt, Rückruf oder Beratung: Schreiben Sie uns oder besuchen Sie die ${site.name}, ${addressLine}. Telefon ${site.phone.display}.`;
+
+export const metadata: Metadata = pageMetadata({ title, description, path: "/kontakt/" });
 
 export default function KontaktPage() {
   return (
@@ -18,35 +25,58 @@ export default function KontaktPage() {
         eyebrow="Kontakt"
         title={
           <>
-            Wir freuen uns <em>auf Ihren Besuch.</em>
+            Wir freuen uns <em>auf Sie.</em>
           </>
         }
-        lead={`${addressLine} · ${site.phone.display}`}
+        lead="Probefahrt, Rückruf oder ein unverbindliches Gespräch über Ihr nächstes Fahrzeug – schreiben Sie uns, rufen Sie an oder besuchen Sie uns in Thalwil."
         image="fassade-schild"
         imagePosition="30% 50%"
       >
         <div className="flex flex-col gap-3 sm:flex-row">
-          <ButtonLink href={site.phone.href}>Jetzt anrufen</ButtonLink>
-          <ButtonLink href={site.email.href} variant="outline">
-            E-Mail schreiben
+          <ButtonLink href="#anfrage" icon="arrow">
+            Anfrage senden
+          </ButtonLink>
+          <ButtonLink href={site.phone.href} variant="outline" className="tabular">
+            {site.phone.display}
           </ButtonLink>
         </div>
       </PageHero>
-      <Prose>
-        <p>
-          Vereinbaren Sie eine Probefahrt, einen Rückruf oder ein persönliches Beratungsgespräch – telefonisch unter{" "}
-          <a href={site.phone.href} className="text-fg underline underline-offset-4">
-            {site.phone.display}
-          </a>
-          , per E-Mail an{" "}
-          <a href={site.email.href} className="text-fg underline underline-offset-4">
-            {site.email.display}
-          </a>{" "}
-          oder direkt bei uns in Thalwil. Wir beraten Sie auf {site.languages.slice(0, -1).join(", ")} und{" "}
-          {site.languages.at(-1)}.
-        </p>
-      </Prose>
-      <VisitBand />
+
+      <Section tone="light" id="anfrage" aria-labelledby="anfrage-title">
+        <Container className="grid gap-16 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-7">
+            <Reveal>
+              <Eyebrow>Ihre Anfrage</Eyebrow>
+              <Heading id="anfrage-title" className="mt-5">
+                Schreiben Sie <em>uns.</em>
+              </Heading>
+              <p className="mt-6 max-w-xl text-lead text-muted">
+                Erzählen Sie uns, worum es geht – wir melden uns so rasch wie möglich persönlich bei Ihnen.
+              </p>
+            </Reveal>
+            <ContactForm className="mt-12 md:mt-16" />
+          </div>
+
+          <aside aria-label="Kontaktangaben" className="lg:col-span-4 lg:col-start-9">
+            <div className="lg:sticky lg:top-28">
+              <ContactDetails />
+            </div>
+          </aside>
+        </Container>
+      </Section>
+
+      <LocationSection />
+
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          name: `${title} – ${site.name}`,
+          url: `${site.url}/kontakt/`,
+          inLanguage: "de-CH",
+          about: { "@id": `${site.url}/#dealer` },
+        }}
+      />
     </>
   );
 }

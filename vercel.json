@@ -1,0 +1,38 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "redirects": [
+    { "source": "/index.php", "destination": "/", "statusCode": 301 },
+    { "source": "/about.php", "destination": "/ueber-uns/", "statusCode": 301 },
+    { "source": "/fahrzeuge.php", "destination": "/fahrzeuge/", "statusCode": 301 },
+    { "source": "/showroom.php", "destination": "/showroom/", "statusCode": 301 },
+    { "source": "/import.php", "destination": "/import/", "statusCode": 301 },
+    { "source": "/kommission.php", "destination": "/kommission/", "statusCode": 301 },
+    { "source": "/partner.php", "destination": "/partner/", "statusCode": 301 },
+    { "source": "/kontakt.php", "destination": "/kontakt/", "statusCode": 301 },
+    { "source": "/impressum.php", "destination": "/impressum/", "statusCode": 301 },
+    { "source": "/datenschutz.php", "destination": "/datenschutz/", "statusCode": 301 }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), payment=(), usb=(), geolocation=(self), browsing-topics=()"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/images/opt/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000, stale-while-revalidate=86400" }]
+    }
+  ]
+}

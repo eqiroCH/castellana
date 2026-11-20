@@ -6,14 +6,17 @@ import { Photo } from "@/components/ui/Photo";
 
 export const metadata: Metadata = {
   title: "Seite nicht gefunden",
-  robots: { index: false },
+  description: "Die gesuchte Seite existiert nicht (mehr). Entdecken Sie unsere Fahrzeuge oder kontaktieren Sie uns.",
+  robots: { index: false, follow: true },
 };
 
 export default function NotFound() {
   return (
     <section className="tone-dark relative isolate flex min-h-[100svh] items-end overflow-hidden" aria-labelledby="nf-title">
       <div className="absolute inset-0 -z-10">
-        <Photo media="ferrari-wheel-wide" alt="" sizes="100vw" priority position="50% 50%" className="size-full object-cover opacity-70" />
+        {/* Not `priority`: the root not-found tree ships in every page's payload, and an eager
+            image here would be preloaded (fetchpriority=high) on every route. */}
+        <Photo media="ferrari-wheel-wide" alt="" sizes="100vw" position="50% 50%" className="size-full object-cover opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/20" />
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink to-transparent" />
       </div>

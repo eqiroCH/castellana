@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Formular-Registrierung</title>
+  </head>
+  <body>
+    <!--
+      Netlify Forms – Registrierung zur Build-Zeit.
+      Die Formulare der Website werden von React gerendert und per fetch() an diese
+      statische Datei geschickt (POST, urlencoded, inkl. form-name). Netlify erkennt das
+      Formular nur über dieses statische HTML. Feldnamen synchron halten mit
+      src/components/forms/ContactForm.tsx und contact-schema.ts. Nicht löschen.
+      Wird nicht benötigt, wenn NEXT_PUBLIC_FORM_ENDPOINT gesetzt ist (z. B. Formspree).
+    -->
+    <form name="kontakt" method="POST" data-netlify="true" netlify-honeypot="website" hidden>
+      <input type="hidden" name="form-name" value="kontakt" />
+      <input type="hidden" name="subject" />
+      <select name="anliegen">
+        <option>Kaufinteresse</option>
+        <option>Probefahrt</option>
+        <option>Rückruf</option>
+        <option>Import-Anfrage</option>
+        <option>Fahrzeug verkaufen (Kommission)</option>
+        <option>Allgemein</option>
+      </select>
+      <input type="text" name="name" />
+      <input type="email" name="email" />
+      <input type="tel" name="telefon" />
+      <input type="text" name="fahrzeug" />
+      <textarea name="nachricht"></textarea>
+      <input type="checkbox" name="datenschutz" value="akzeptiert" />
+      <input type="text" name="website" />
+    </form>
+  </body>
+</html>

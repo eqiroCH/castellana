@@ -1,0 +1,13 @@
+# Netlify: alte PHP-URLs von castellana.ch → neue Struktur (301).
+# Synchron halten mit "redirects" in vercel.json.
+
+/index.php        /               301
+/about.php        /ueber-uns/     301
+/fahrzeuge.php    /fahrzeuge/     301
+/showroom.php     /showroom/      301
+/import.php       /import/        301
+/kommission.php   /kommission/    301
+/partner.php      /partner/       301
+/kontakt.php      /kontakt/       301
+/impressum.php    /impressum/     301
+/datenschutz.php  /datenschutz/   301
