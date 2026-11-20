@@ -23,7 +23,7 @@ export default function FahrzeugePage() {
         }
         lead="Porsche, Ferrari, Mercedes-AMG, Lamborghini und viele mehr – sorgfältig ausgewählt und bereit für die Übergabe."
         image="ferrari-front"
-        imagePosition="50% 55%"
+        imagePosition="50% 78%"
       >
         <ButtonLink href={site.links.autoscout}>Bestand auf AutoScout24</ButtonLink>
       </PageHero>

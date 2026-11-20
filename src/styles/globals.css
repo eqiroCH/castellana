@@ -235,6 +235,8 @@ dialog.menu-dialog {
   margin: 0;
   padding: 0;
   border: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--color-ink);
   color: var(--color-paper);
   opacity: 0;

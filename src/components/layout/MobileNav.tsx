@@ -99,14 +99,14 @@ export function MobileNav() {
                         href={item.href}
                         onClick={close}
                         aria-current={active ? "page" : undefined}
-                        className="group flex min-h-16 items-baseline gap-5 py-3"
+                        className="group flex min-h-14 items-baseline gap-5 py-2.5 sm:min-h-16 sm:py-3"
                       >
                         <span className="w-6 text-[0.6875rem] font-medium text-subtle tabular">
                           {String(index + 1).padStart(2, "0")}
                         </span>
                         <span
                           className={cn(
-                            "font-display text-[2.25rem] leading-none tracking-tight transition-colors sm:text-5xl",
+                            "font-display text-[2rem] leading-none tracking-tight transition-colors sm:text-5xl",
                             active ? "text-fg" : "text-fg/80 group-hover:text-fg",
                           )}
                         >

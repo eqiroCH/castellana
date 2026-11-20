@@ -14,7 +14,7 @@ export function VisitBand() {
       <Container className="grid gap-14 lg:grid-cols-12 lg:gap-8">
         <Reveal className="lg:col-span-6">
           <div className="relative aspect-[16/10] overflow-hidden bg-surface lg:aspect-[4/3]">
-            <Photo media="fassade-schild" sizes="(min-width: 1024px) 50vw, 100vw" position="30% 50%" className="size-full object-cover" />
+            <Photo media="showroom-nacht" sizes="(min-width: 1024px) 50vw, 100vw" position="45% 50%" className="size-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent" />
           </div>
         </Reveal>

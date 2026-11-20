@@ -8,12 +8,12 @@ import { Section } from "@/components/ui/Section";
 import { SectionHeader } from "./SectionHeader";
 
 const tiles: Array<{ media: MediaSlug; className: string; sizes: string }> = [
-  { media: "showroom-lamborghini", className: "lg:col-span-7 lg:row-span-2", sizes: "(min-width: 1024px) 56vw, 100vw" },
-  { media: "showroom-mclaren", className: "lg:col-span-5", sizes: "(min-width: 1024px) 40vw, 50vw" },
-  { media: "showroom-aston-martin", className: "lg:col-span-5", sizes: "(min-width: 1024px) 40vw, 50vw" },
+  { media: "showroom-lamborghini", className: "col-span-2 lg:col-span-7 lg:row-span-2", sizes: "(min-width: 1024px) 56vw, 100vw" },
+  { media: "showroom-mclaren", className: "lg:col-span-5 lg:aspect-auto", sizes: "(min-width: 1024px) 40vw, 50vw" },
+  { media: "showroom-aston-martin", className: "lg:col-span-5 lg:aspect-auto", sizes: "(min-width: 1024px) 40vw, 50vw" },
   { media: "showroom-detail", className: "lg:col-span-4", sizes: "(min-width: 1024px) 32vw, 50vw" },
   { media: "showroom-cockpit", className: "lg:col-span-4", sizes: "(min-width: 1024px) 32vw, 50vw" },
-  { media: "showroom-maserati", className: "lg:col-span-4", sizes: "(min-width: 1024px) 32vw, 50vw" },
+  { media: "showroom-maserati", className: "col-span-2 lg:col-span-4", sizes: "(min-width: 1024px) 32vw, 100vw" },
 ];
 
 /** Bento grid of the client's own showroom photos. */
@@ -42,12 +42,12 @@ export function ShowroomGallery() {
               as="li"
               key={tile.media}
               delay={(i % 3) * 80}
-              className={cn("group relative overflow-hidden bg-surface", i === 0 ? "col-span-2 aspect-[3/2] lg:aspect-auto" : "aspect-[3/2]", tile.className)}
+              className={cn("group relative aspect-[3/2] overflow-hidden bg-surface", tile.className)}
             >
               <Photo
                 media={tile.media}
                 sizes={tile.sizes}
-                className="size-full object-cover saturate-[0.9] transition-transform duration-[1400ms] ease-out-quart group-hover:scale-[1.03]"
+                className="absolute inset-0 size-full object-cover brightness-[0.92] saturate-[0.85] transition-transform duration-[1400ms] ease-out-quart group-hover:scale-[1.03]"
               />
             </Reveal>
           ))}

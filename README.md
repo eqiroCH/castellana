@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# castellana.ch
 
-## Getting Started
+Website der Castellana Automobile AG, Thalwil. Next.js 16 (App Router, statischer Export),
+TypeScript, Tailwind CSS 4. Inhalte und Fakten: siehe `BRIEF.md`.
 
-First, run the development server:
+## Befehle
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Befehl | Zweck |
+| --- | --- |
+| `npm run dev` | Entwicklungsserver auf :3000 |
+| `npm run build` | Statischer Export nach `out/` |
+| `npm run lint` | ESLint (muss ohne Warnungen durchlaufen) |
+| `npm run images` | Fotos aus `scripts/image-manifest.mjs` → WebP in `public/images/opt`, `src/content/media.ts`, `CREDITS.md` |
+| `npm run icons` | Favicons + OG-Bild in `src/app` (nach `npm run build`, nutzt die echten Schriften) |
+| `npm run screenshots` | Ganzseiten-Screenshots aller Routen (390 / 1440 px) aus `out/`; `BASE_URL`, `ROUTES`, `SHOTS_DIR` optional |
+
+## Struktur
+
+```
+src/
+  app/                 Routen (jede Seite beginnt mit einem dunklen Hero)
+  content/
+    site.ts            ALLE Fakten: Adresse, Zeiten, Team, Partner, FAQ, Import, Kommission …
+    vehicles.ts        kuratierte Fahrzeuge (curated) + Beispielmodelle (example, ohne Preis)
+    media.ts           GENERIERT – verfügbare Fotos (Slug → Grössen, Alt-Text)
+  styles/globals.css   Design-Tokens (@theme), Ton-Varianten, Motion
+  components/
+    ui/                Container, Section, Eyebrow, Heading, Button/ButtonLink, Logo,
+                       Divider, Stat, Reveal, Photo, Icons
+    layout/            Header, MobileNav, Footer, NewsletterForm, PromoBar, JsonLd
+    sections/          Hero, PageHero, SectionHeader, Prose, VehicleHighlights,
+                       QualityPromise, Services, AboutTeaser, ShowroomGallery,
+                       RatingBand, VisitBand
+    vehicles/          VehicleCard, ExampleVehicleCard
+assets/photos/         Kundenfotos (Quellen für die Bildpipeline)
+scripts/               image-manifest, optimize-images, generate-icons, screenshot
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Designsystem in Kürze
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Schriften:** Instrument Serif (Display, `font-display`, Kursiv via `<em>`) + Instrument Sans (Text/UI, `font-sans`).
+- **Farben:** `ink` #0B0B0D, `paper` #F4F2EE, `brand` #E30613 (einziger Akzent – Logo-Quadrat, Eyebrow-Punkt, Primär-CTA).
+- **Töne:** `<Section tone="dark|light">`. Darin immer die ton-abhängigen Utilities verwenden:
+  `bg-bg`, `bg-surface`, `text-fg`, `text-muted`, `text-subtle`, `border-line`, `border-line-strong`.
+  Alle Paare erfüllen WCAG AA.
+- **Typo-Skala:** `text-display-2xl|xl|lg|md|sm` (fluid), `text-lead`, `text-eyebrow`.
+- **Layout:** `<Container>` (max. 1376 px, Gutter `px-gutter`), Sektionsabstand `py-section`, Header-Höhe `h-header`.
+- **Buttons:** `<ButtonLink href variant="primary|outline|ghost|link">` – interne Links via next/link,
+  externe öffnen in neuem Tab mit ↗, `tel:`/`mailto:` bleiben normale Links. Mindesthöhe 44 px.
+- **Bilder:** nur über `<Photo media="slug" sizes="…" />` (srcset aus `media.ts`). Neue Fotos zuerst im
+  Manifest erfassen und `npm run images` ausführen. Unsplash-Fotos werden automatisch in `CREDITS.md` aufgeführt.
+  Fahrzeugfotos, die nicht das konkrete Auto zeigen, als «Symbolbild» kennzeichnen.
+- **Motion:** `<Reveal delay={…}>` (einmaliges Einblenden, 12 px). Respektiert `prefers-reduced-motion`
+  und zeigt Inhalte spätestens nach 2.5 s auch ohne JavaScript.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Regeln
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Keine Fakten erfinden – alles kommt aus `src/content/site.ts` bzw. `BRIEF.md`.
+- Schweizer Schreibweise (ss, CHF, 175’000 → `formatNumber`/`formatChf` aus `src/lib/format.ts`).
+- Promo-Leiste: `site.promo.enabled`; Feiertags-Öffnungszeiten: `site.hoursNote.enabled`.

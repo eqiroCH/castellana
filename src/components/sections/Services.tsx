@@ -7,30 +7,35 @@ import { Reveal } from "@/components/ui/Reveal";
 import { Section } from "@/components/ui/Section";
 import { SectionHeader } from "./SectionHeader";
 
-const services: Array<{ title: string; text: string; href: string; image: MediaSlug; alt?: string }> = [
+/** `image` = 4:5 crop (≥ 640px), `mobileImage` = landscape source for the 16:10 mobile card. */
+const services: Array<{ title: string; text: string; href: string; image: MediaSlug; mobileImage: MediaSlug }> = [
   {
     title: "Direktimport",
     text: "Top-Fahrzeuge zu Top-Preisen aus der EU und den USA – von den Dokumenten bis zur schlüsselfertigen Übergabe.",
     href: "/import/",
     image: "porsche-gt3-rear-portrait",
+    mobileImage: "porsche-gt3-rear",
   },
   {
     title: "Kommissionsverkauf",
     text: "Wir verkaufen Ihr Fahrzeug – mit Leasing, Garantie und Eintausch, die Sie privat nicht anbieten können.",
     href: "/kommission/",
     image: "amg-gt-portrait",
+    mobileImage: "amg-gt-wide",
   },
   {
     title: "Showroom Thalwil",
     text: "Rund 200 Fahrzeuge vor Ort: im Showroom und in der Lagerhalle mit über 100 aufbereiteten Fahrzeugen.",
     href: "/showroom/",
     image: "showroom-maserati-portrait",
+    mobileImage: "showroom-maserati",
   },
   {
     title: "Finanzierung & Leasing",
     text: "Leasing und Finanzierung über unseren Partner Alphera Financial Services (BMW Group).",
     href: "/partner/",
     image: "porsche-cockpit-portrait",
+    mobileImage: "porsche-cockpit-wide",
   },
 ];
 
@@ -55,6 +60,7 @@ export function Services() {
                 <div className="relative aspect-[16/10] overflow-hidden bg-surface sm:aspect-[4/5]">
                   <Photo
                     media={service.image}
+                    mobileMedia={service.mobileImage}
                     alt=""
                     sizes="(min-width: 1024px) 24vw, (min-width: 640px) 48vw, 100vw"
                     className="size-full object-cover saturate-[0.8] transition-transform duration-[1400ms] ease-out-quart group-hover:scale-[1.04]"

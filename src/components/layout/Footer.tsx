@@ -68,7 +68,15 @@ export function Footer() {
             {site.hours.map((h) => (
               <div key={h.label} className="contents">
                 <dt className="text-subtle">{h.label}</dt>
-                <dd className="text-muted">{formatSlots(h.slots)}</dd>
+                <dd className="text-muted">
+                  {h.slots.length === 0
+                    ? formatSlots(h.slots)
+                    : h.slots.map(([from, to]) => (
+                        <span key={from} className="block">
+                          {from} – {to}
+                        </span>
+                      ))}
+                </dd>
               </div>
             ))}
           </dl>

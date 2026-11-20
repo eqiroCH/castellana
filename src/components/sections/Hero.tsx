@@ -29,7 +29,8 @@ export function Hero() {
         />
         {/* Legibility: left wash on desktop, bottom wash everywhere */}
         <div className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/35 to-transparent max-md:hidden" />
-        <div className="absolute inset-x-0 bottom-0 h-[78%] bg-gradient-to-t from-ink via-ink/75 to-transparent md:h-[62%] md:via-ink/50" />
+        <div className="absolute inset-0 bg-ink/35 md:hidden" />
+        <div className="absolute inset-x-0 bottom-0 h-[82%] bg-gradient-to-t from-ink from-35% via-ink/80 to-transparent md:h-[62%] md:from-0% md:via-ink/50" />
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-ink/60 to-transparent" />
       </div>
 
