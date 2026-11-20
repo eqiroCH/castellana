@@ -31,7 +31,6 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "de_CH",
-    url: site.url,
     siteName: site.name,
     title: `${site.name} – Premium- & Sportwagen in Thalwil`,
     description: site.description,

@@ -168,61 +168,8 @@ export const site = {
     { title: "Übergabe", text: "Wir garantieren Ihnen eine schlüsselfertige Übergabe." },
   ],
 
-  importFaq: [
-    {
-      question: "Was ist ein Importfahrzeug?",
-      answer:
-        "Nehmen wir einen Mercedes SL 63 AMG: Er wird im Werk Bremen gebaut und weltweit an Vertretungen verkauft. Wird ein solches Fahrzeug in die Schweiz eingeführt, spricht man von einem Import. Die Qualität des Autos ist immer dieselbe.",
-    },
-    {
-      question: "Warum ein Auto importieren?",
-      answer:
-        "Andere Länder, andere Preise: Unterschiedliche Mehrwertsteuersätze, Luxussteuern und Währungen führen zu grossen Preisunterschieden. Beim Kauf im EU-Ausland oder in den USA lässt sich deshalb oft sehr viel Geld sparen.",
-    },
-    {
-      question: "Lohnt sich ein Import immer?",
-      answer:
-        "Nein. Wir vergleichen zuerst die Preise in der Schweiz, dann im EU-Nachbarland und in den USA – erst danach geben wir Ihnen eine ehrliche Kaufempfehlung ab.",
-    },
-    {
-      question: "Worauf muss ich achten?",
-      answer:
-        "Autokauf ist Vertrauenssache. Wir arbeiten ausschliesslich mit starken Partnern in der Schweiz, der EU und den USA. Selbst in den USA werden Fahrzeuge vor dem Kauf von Partnern vor Ort besichtigt.",
-    },
-    {
-      question: "Wie kann ich mich absichern?",
-      answer: "Gerne nennen wir Ihnen Referenzadressen zufriedener Importkundinnen und -kunden.",
-    },
-    {
-      question: "Wie lange ist die Lieferfrist?",
-      answer: "Aus den USA rechnen wir mit sechs bis acht Wochen, aus Deutschland mit rund zwei Wochen.",
-    },
-    {
-      question: "Welche Garantie erhalte ich?",
-      answer:
-        "Neuwagen: zwei Jahre ab erster Inverkehrsetzung, auf Wunsch mit Anschlussgarantie. Occasionen: mindestens zwölf Monate oder 20’000 km. Der Service ist in Ihrer Vertrauenswerkstatt möglich.",
-    },
-    {
-      question: "Gibt es bei gewissen Marken Gratis-Service?",
-      answer: "Auf Wunsch bieten wir Ihnen eine Lösung mit Gratis-Service an.",
-    },
-    {
-      question: "Welche Risiken gehe ich ein?",
-      answer:
-        "Für Sie keine. Wir verfügen über mehrjährige Importerfahrung und ein bewährtes Modell – unsere Kundinnen und Kunden bestätigen es.",
-    },
-  ] satisfies FaqItem[],
 
   commission: {
-    intro:
-      "Wie beim Immobilienbroker: Wir verkaufen Ihr Fahrzeug professionell – und Sie erzielen in der Regel einen besseren Preis als im Privatverkauf.",
-    arguments: [
-      { title: "Leasing", text: "Privat können Sie kein Leasing anbieten – wir schon." },
-      { title: "Garantie", text: "Privat können Sie keine Garantie anbieten – wir schon." },
-      { title: "Eintausch", text: "Privat können Sie kein anderes Auto in Zahlung nehmen – wir schon." },
-      { title: "Zeit", text: "Telefonate, Erklärungen, Probefahrten: Das alles übernehmen wir für Sie." },
-      { title: "Preis", text: "Mit professioneller Präsentation erzielen Sie einen höheren Preis." },
-    ],
     quote: { text: "Wir übernehmen für Sie die Abwicklung von A bis Z.", author: "Antonio Castellana" },
   },
 
@@ -254,9 +201,9 @@ export const site = {
   ] satisfies Partner[],
 
   videos: [
-    { id: "4r49EJO_irE", title: "Castellana Automobile AG – Firmenporträt" },
-    { id: "NU1DGvBoPu0", title: "Castellana Automobile in der Automobil Revue" },
-    { id: "bVMyvLQfwQ8", title: "Fahrzeugimport mit Castellana" },
+    { id: "4r49EJO_irE", title: "Castellana in der Automobil Revue" },
+    { id: "NU1DGvBoPu0", title: "Autoimport & Kommissionsverkauf erklärt" },
+    { id: "bVMyvLQfwQ8", title: "Castellana Automobile – Firmenporträt" },
   ] satisfies Video[],
 
   newsletter: {
@@ -271,7 +218,6 @@ export const site = {
     linkLabel: "Mehr erfahren",
   },
 
-  contactReasons: ["Kaufinteresse", "Probefahrt", "Rückruf"],
 } as const;
 
 /** Primary navigation (header, mobile menu, footer). Trailing slashes match `trailingSlash: true`. */

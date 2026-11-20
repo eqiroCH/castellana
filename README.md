@@ -58,3 +58,26 @@ scripts/               image-manifest, optimize-images, generate-icons, screensh
 - Keine Fakten erfinden – alles kommt aus `src/content/site.ts` bzw. `BRIEF.md`.
 - Schweizer Schreibweise (ss, CHF, 175’000 → `formatNumber`/`formatChf` aus `src/lib/format.ts`).
 - Promo-Leiste: `site.promo.enabled`; Feiertags-Öffnungszeiten: `site.hoursNote.enabled`.
+
+## Formulare & Deployment
+
+- **Kontaktformular** (`src/components/forms/`): `ContactForm` (Client-Komponente) mit Validierung, Fehlerübersicht,
+  Honeypot `website` und Vorbefüllung per `?anliegen=…&fahrzeug=…`. Versand ohne Reload: an
+  `NEXT_PUBLIC_FORM_ENDPOINT` (Formspree-kompatibel, JSON), sonst Netlify Forms (`POST` an `/__forms.html`),
+  im Fehlerfall vorbefülltes `mailto:`. Netlify erkennt das Formular über `public/__forms.html` – Feldnamen
+  synchron halten. Wiederverwendbar: `<ContactForm defaultReason="kommission" />`.
+- **Hosting:** `netlify.toml` + `public/_redirects` (Netlify) bzw. `vercel.json` (Vercel) – Redirects der alten
+  `*.php`-URLs und Header in beiden Dateien identisch halten. Umgebungsvariablen: `.env.example`.
+- **Übergabe, DNS, offene Punkte:** siehe `DEPLOY.md`.
+
+## Weitere Komponenten (Phase 2)
+
+- `sections/ProcessSteps` – nummerierte Prozess-Schritte (`steps: {title,text}[]`), vertikal auf Mobile, horizontal ab `lg`.
+- `sections/Faq` – Accordion auf `<details>/<summary>`; `faqPageJsonLd(items)` liefert das FAQPage-Schema.
+- `sections/CtaBand` – dunkles Abschluss-Band mit Buttons und Kontaktzeile (`showContact`).
+- `sections/QuoteFeature` – Foto + grosses Serif-Zitat mit Porträt.
+- `sections/TeamGrid`, `sections/VideoFacade` (Click-to-load YouTube, nocookie), `sections/Gallery` (Lightbox auf `<dialog>`), `sections/PartnerCards`.
+- `vehicles/AutoScoutWidget` – AutoScout24 Host-Integration (Config-ID in `site.autoscoutWidget`). Rendert nur auf `https://castellana.ch` (CSP `frame-ancestors`), sonst Fallback-Karte.
+- `forms/ContactForm` – `<ContactForm defaultReason="kommission" tone="dark|light" />`, liest `?anliegen=` und `?fahrzeug=`.
+- `lib/metadata.ts` – `pageMetadata({ title, description, path })` für Canonical, Open Graph und Twitter je Seite.
+- Inhalte je Seite liegen in `src/content/{import,kommission,ueber-uns,showroom,partner}.ts`, globale Fakten in `src/content/site.ts`.

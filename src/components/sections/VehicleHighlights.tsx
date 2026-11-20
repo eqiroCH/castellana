@@ -33,6 +33,11 @@ export function VehicleHighlights() {
             </Reveal>
           ))}
         </ul>
+        <p className="mt-8 max-w-3xl text-[0.8125rem] leading-relaxed text-muted">
+          Leasingraten sind Beispiele aus den aktuellen Inseraten und abhängig von Laufzeit, Anzahlung und Bonität.
+          Die Kreditvergabe ist verboten, falls sie zur Überschuldung der Konsumentin oder des Konsumenten führt
+          (Art.&nbsp;3 UWG).
+        </p>
 
         <div className="mt-24 grid gap-10 lg:grid-cols-12 lg:gap-8">
           <Reveal className="lg:col-span-4">
