@@ -1,0 +1,109 @@
+/*
+ * <Globe> (global CSS, imported by Globe.tsx — class names are prefixed with `globe-`).
+ * Placeholder sphere, canvas fade-in, «Thalwil» tag and legend swatches.
+ * The disc sits at inset 10 % = cobe's sphere radius (0.8 of the half size at scale 1),
+ * so placeholder and WebGL globe line up exactly when the canvas fades in.
+ */
+
+.globe-placeholder {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 30%, rgb(255 255 255 / 0.06), transparent 58%),
+    radial-gradient(circle at 50% 50%, #131317 0%, #0e0e11 64%, #0b0b0d 100%);
+  box-shadow:
+    0 0 0 1px rgb(244 242 238 / 0.05),
+    0 0 72px 8px rgb(227 6 19 / 0.1),
+    inset 0 0 44px rgb(227 6 19 / 0.1);
+  transition: opacity 1200ms var(--ease-out-quart);
+}
+
+/* Dotted texture hint, fading towards the limb */
+.globe-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(rgb(174 171 165 / 0.2) 0.75px, transparent 1.25px);
+  background-size: 8px 8px;
+  mask-image: radial-gradient(circle at 46% 42%, #000 18%, transparent 68%);
+}
+
+/* WebGL canvas host and 2-D overlay fade in together once the globe is ready */
+.globe-host,
+.globe-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1400ms var(--ease-out-quart);
+}
+
+.globe-overlay {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+[data-state="ready"] > .globe-host,
+[data-state="ready"] > .globe-overlay {
+  opacity: 1;
+}
+
+[data-state="ready"] > .globe-placeholder {
+  opacity: 0;
+}
+
+/* The tag is positioned by the engine; keep it hidden until the globe itself is shown. */
+.globe-tag {
+  visibility: hidden;
+}
+
+[data-state="ready"] > .globe-tag {
+  visibility: visible;
+}
+
+.globe-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.globe-tag > span {
+  position: absolute;
+  left: 0.7rem;
+  top: 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  font-size: 0.625rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-paper);
+  text-shadow: 0 1px 8px rgb(11 11 13 / 0.9);
+}
+
+.globe-tag > span::before {
+  content: "";
+  width: 0.875rem;
+  height: 1px;
+  background: rgb(244 242 238 / 0.45);
+}
+
+.globe-swatch {
+  display: inline-block;
+  width: 1.375rem;
+  height: 1px;
+  flex: none;
+  background: rgb(255 72 64);
+}
+
+.globe-swatch.globe-swatch--dashed {
+  background: repeating-linear-gradient(90deg, rgb(255 72 64) 0 3px, transparent 3px 7px);
+}

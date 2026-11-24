@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
 import { Reveal } from "@/components/ui/Reveal";
 import { Section } from "@/components/ui/Section";
+import { Drift } from "@/components/scroll/Drift";
 
 type QuoteFeatureProps = {
   /** Quote text without guillemets. Use <em> for the muted italic accent. */
@@ -27,6 +28,8 @@ type QuoteFeatureProps = {
   children?: ReactNode;
   /** Accessible name of the section. */
   label: string;
+  /** Slow scroll-linked drift of the quote block against the photo (default false). */
+  drift?: boolean;
 };
 
 /** Photo + large serif quote with attribution — a personal trust moment between content sections. */
@@ -44,7 +47,39 @@ export function QuoteFeature({
   reverse = false,
   children,
   label,
+  drift = false,
 }: QuoteFeatureProps) {
+  const quoteBlock = (
+    <>
+      {eyebrow && <Eyebrow className="mb-8">{eyebrow}</Eyebrow>}
+      <figure>
+        <blockquote className="font-display text-display-lg text-fg [&_em]:italic [&_em]:text-fg/60">
+          <p>«{quote}»</p>
+        </blockquote>
+        <figcaption className="mt-8 flex items-center gap-4 text-sm">
+          {portrait ? (
+            // eslint-disable-next-line @next/next/no-img-element -- tiny original portrait, shown below its native size
+            <img
+              src={portrait}
+              alt=""
+              width={56}
+              height={56}
+              loading="lazy"
+              className="size-14 shrink-0 rounded-full object-cover object-top grayscale-[0.2]"
+            />
+          ) : (
+            <span aria-hidden="true" className="h-px w-10 bg-fg/40" />
+          )}
+          <span>
+            <span className="block font-semibold text-fg">{author}</span>
+            {role && <span className="block text-muted">{role}</span>}
+          </span>
+        </figcaption>
+      </figure>
+      {children && <div className="mt-12">{children}</div>}
+    </>
+  );
+
   return (
     <Section tone={tone} aria-label={label}>
       <Container className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
@@ -61,32 +96,7 @@ export function QuoteFeature({
         </Reveal>
 
         <Reveal className={cn("lg:col-span-5", reverse ? "lg:order-1 lg:col-start-1" : "lg:col-start-8")} delay={100}>
-          {eyebrow && <Eyebrow className="mb-8">{eyebrow}</Eyebrow>}
-          <figure>
-            <blockquote className="font-display text-display-lg text-fg [&_em]:italic [&_em]:text-fg/60">
-              <p>«{quote}»</p>
-            </blockquote>
-            <figcaption className="mt-8 flex items-center gap-4 text-sm">
-              {portrait ? (
-                // eslint-disable-next-line @next/next/no-img-element -- tiny original portrait, shown below its native size
-                <img
-                  src={portrait}
-                  alt=""
-                  width={56}
-                  height={56}
-                  loading="lazy"
-                  className="size-14 shrink-0 rounded-full object-cover object-top grayscale-[0.2]"
-                />
-              ) : (
-                <span aria-hidden="true" className="h-px w-10 bg-fg/40" />
-              )}
-              <span>
-                <span className="block font-semibold text-fg">{author}</span>
-                {role && <span className="block text-muted">{role}</span>}
-              </span>
-            </figcaption>
-          </figure>
-          {children && <div className="mt-12">{children}</div>}
+          {drift ? <Drift distance={64}>{quoteBlock}</Drift> : quoteBlock}
         </Reveal>
       </Container>
     </Section>

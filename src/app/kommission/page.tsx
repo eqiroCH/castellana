@@ -14,6 +14,8 @@ import { PageHero } from "@/components/sections/PageHero";
 import { ProcessSteps } from "@/components/sections/ProcessSteps";
 import { QuoteFeature } from "@/components/sections/QuoteFeature";
 import { SectionHeader } from "@/components/sections/SectionHeader";
+import { ArgumentStack } from "@/components/scroll/ArgumentStack";
+import { ClipReveal } from "@/components/scroll/ClipReveal";
 
 const title = "Auto auf Kommission verkaufen in Thalwil";
 const description =
@@ -58,11 +60,11 @@ export default function KommissionPage() {
           </Reveal>
 
           <div className="mt-16 grid gap-10 lg:mt-24 lg:grid-cols-12 lg:gap-8">
-            <Reveal className="lg:col-span-7">
+            <ClipReveal className="lg:col-span-7">
               <div className="relative aspect-[3/2] overflow-hidden bg-surface">
                 <Photo media="showroom-aston-martin" sizes="(min-width: 1024px) 58vw, 100vw" className="size-full object-cover" />
               </div>
-            </Reveal>
+            </ClipReveal>
             <Reveal className="flex flex-col justify-end gap-8 lg:col-span-4 lg:col-start-9" delay={100}>
               <p className="text-lead text-muted">{commissionIntro.text}</p>
               <p className="border-t border-line-strong pt-6 text-[0.9375rem] text-muted">
@@ -74,10 +76,10 @@ export default function KommissionPage() {
         </Container>
       </Section>
 
-      {/* Five arguments */}
+      {/* Five arguments — sticky scroll stack */}
       <Section tone="dark" aria-labelledby="vorteile-title">
         <Container>
-          <SectionHeader
+          <ArgumentStack
             id="vorteile-title"
             eyebrow="Warum durch uns verkaufen"
             title={
@@ -85,26 +87,8 @@ export default function KommissionPage() {
                 Fünf Gründe, <em>uns den Verkauf zu überlassen.</em>
               </>
             }
+            items={commissionArguments}
           />
-          <ol className="mt-14 border-b border-line md:mt-20">
-            {commissionArguments.map((arg, i) => (
-              <Reveal
-                as="li"
-                key={arg.title}
-                delay={i * 60}
-                className="group grid gap-x-8 gap-y-4 border-t border-line py-10 md:grid-cols-12 md:items-baseline md:py-12"
-              >
-                <span className="font-display text-lg text-subtle tabular md:col-span-1" aria-hidden="true">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="font-display text-display-lg text-fg md:col-span-5">{arg.title}</h3>
-                <div className="md:col-span-5 md:col-start-8">
-                  <p className="text-lead text-fg">{arg.lead}</p>
-                  <p className="mt-2 text-muted">{arg.text}</p>
-                </div>
-              </Reveal>
-            ))}
-          </ol>
         </Container>
       </Section>
 
@@ -143,6 +127,7 @@ export default function KommissionPage() {
         portrait="/images/team/8-antonio-castellana.jpg"
         image="showroom-lamborghini"
         reverse
+        drift
       />
 
       <CtaBand

@@ -1,0 +1,269 @@
+/*
+ * Scroll choreography (global CSS imported by the components in src/components/scroll and
+ * the Faq / ProcessSteps sections). Class names are prefixed `sc-`.
+ * Every effect is keyed on a data attribute that JS sets after mount (data-scroll, data-clip),
+ * so without JavaScript all content renders in its final, fully visible state.
+ */
+
+/* --------------------------------------------------------------------------
+   <ClipReveal> — frame opens from an inset, image settles from a slight zoom
+   -------------------------------------------------------------------------- */
+
+.sc-clip[data-clip] {
+  --sc-c: calc(1 - var(--clip, 0));
+  clip-path: inset(calc(var(--sc-c) * 9%) calc(var(--sc-c) * 13%) calc(var(--sc-c) * 9%) calc(var(--sc-c) * 13%));
+}
+
+.sc-clip[data-clip] img {
+  transform: scale(calc(1 + var(--sc-c) * 0.16));
+  transform-origin: 50% 55%;
+}
+
+/* --------------------------------------------------------------------------
+   <ProcessSteps> — red progress line, numbers muted → red
+   -------------------------------------------------------------------------- */
+
+.sc-steps-fill {
+  position: absolute;
+  inset: 0;
+  display: none;
+  background: var(--color-brand);
+  transform-origin: 50% 0;
+  transform: scaleY(var(--fill, 0));
+  transition: transform 160ms linear;
+}
+
+@media (min-width: 1024px) {
+  .sc-steps-fill {
+    transform-origin: 0 50%;
+    transform: scaleX(var(--fill, 0));
+  }
+}
+
+.sc-steps[data-scroll] .sc-steps-fill {
+  display: block;
+}
+
+.sc-steps-num,
+.sc-steps-body,
+.sc-steps-marker {
+  transition:
+    color 600ms var(--ease-out-quart),
+    opacity 600ms var(--ease-out-quart),
+    background-color 400ms var(--ease-out-quart),
+    border-color 400ms var(--ease-out-quart);
+}
+
+.sc-steps[data-scroll] > li:not([data-active]) .sc-steps-body {
+  opacity: 0.45;
+}
+
+.sc-steps[data-scroll] > li[data-active] .sc-steps-num {
+  color: var(--color-brand);
+}
+
+.sc-steps[data-scroll] .sc-steps-marker {
+  border: 1px solid color-mix(in srgb, var(--tone-fg) 55%, transparent);
+  background: var(--tone-bg);
+}
+
+.sc-steps[data-scroll] > li[data-active] .sc-steps-marker {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+}
+
+/* one-shot ping when a step activates */
+.sc-steps-marker::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--color-brand);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sc-steps[data-scroll] > li[data-active] .sc-steps-marker::after {
+    animation: sc-ping 1100ms var(--ease-out-quart) both;
+  }
+}
+
+@keyframes sc-ping {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   <Faq> — smooth height via ::details-content + grid rows, rotating plus
+   -------------------------------------------------------------------------- */
+
+.sc-faq::details-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition:
+    grid-template-rows 560ms var(--ease-out-quart),
+    content-visibility 560ms allow-discrete;
+}
+
+.sc-faq[open]::details-content {
+  grid-template-rows: 1fr;
+}
+
+.sc-faq-panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sc-faq-panel > * {
+  opacity: 0;
+  translate: 0 -0.5rem;
+  transition:
+    opacity 320ms var(--ease-out-quart),
+    translate 560ms var(--ease-out-quart);
+}
+
+.sc-faq[open] .sc-faq-panel > * {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: 90ms;
+}
+
+@starting-style {
+  .sc-faq[open] .sc-faq-panel > * {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
+
+.sc-faq-icon {
+  transition:
+    background-color 300ms var(--ease-out-quart),
+    border-color 300ms var(--ease-out-quart),
+    color 300ms var(--ease-out-quart);
+}
+
+.sc-faq-cross {
+  transition: transform 560ms var(--ease-out-quart);
+}
+
+.sc-faq[open] .sc-faq-cross {
+  transform: rotate(135deg);
+}
+
+/* --------------------------------------------------------------------------
+   <ArgumentStack> — sticky counter + items that activate at the viewport centre
+   -------------------------------------------------------------------------- */
+
+.sc-stack:not([data-scroll]) .sc-stack-counter {
+  visibility: hidden;
+}
+
+.sc-stack-num {
+  transition:
+    opacity 600ms var(--ease-out-quart),
+    transform 800ms var(--ease-out-quart);
+}
+
+.sc-stack-num[data-pos="before"] {
+  opacity: 0;
+  transform: translate3d(0, -18%, 0);
+}
+
+.sc-stack-num[data-pos="after"] {
+  opacity: 0;
+  transform: translate3d(0, 18%, 0);
+}
+
+.sc-stack-tick {
+  width: 1.5rem;
+  height: 2px;
+  background: var(--tone-line-strong);
+  transition: background-color 500ms var(--ease-out-quart);
+}
+
+.sc-stack-tick[data-on] {
+  background: var(--color-brand);
+}
+
+.sc-arg-line {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--tone-line);
+}
+
+.sc-arg-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--tone-line-strong);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition:
+    transform 1000ms var(--ease-out-quart),
+    background-color 500ms var(--ease-out-quart);
+}
+
+.sc-arg-num,
+.sc-arg-title,
+.sc-arg-lead,
+.sc-arg-text {
+  transition: color 600ms var(--ease-out-quart);
+}
+
+.sc-arg-num {
+  color: var(--tone-subtle);
+}
+
+.sc-arg-title,
+.sc-arg-lead {
+  color: var(--tone-fg);
+}
+
+.sc-arg-text {
+  color: var(--tone-muted);
+}
+
+/* JS running: muted until the item reaches the centre */
+.sc-stack[data-scroll] .sc-arg-title {
+  color: color-mix(in srgb, var(--tone-fg) 28%, transparent);
+}
+
+.sc-stack[data-scroll] .sc-arg-lead {
+  color: color-mix(in srgb, var(--tone-fg) 40%, transparent);
+}
+
+.sc-stack[data-scroll] .sc-arg-text {
+  color: color-mix(in srgb, var(--tone-muted) 55%, transparent);
+}
+
+.sc-stack[data-scroll] .sc-arg[data-active] .sc-arg-title,
+.sc-stack[data-scroll] .sc-arg[data-active] .sc-arg-lead {
+  color: var(--tone-fg);
+}
+
+.sc-stack[data-scroll] .sc-arg[data-active] .sc-arg-text {
+  color: var(--tone-muted);
+}
+
+.sc-stack[data-scroll] .sc-arg[data-active] .sc-arg-num {
+  color: var(--color-brand);
+}
+
+.sc-stack[data-scroll] .sc-arg[data-passed] .sc-arg-line::after,
+.sc-stack[data-scroll] .sc-arg[data-active] .sc-arg-line::after {
+  transform: scaleX(1);
+}
+
+.sc-stack[data-scroll] .sc-arg[data-active] .sc-arg-line::after {
+  background: var(--color-brand);
+}
+
+.sc-stack:not([data-scroll]) .sc-arg-line::after {
+  transform: scaleX(1);
+}

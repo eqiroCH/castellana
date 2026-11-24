@@ -6,7 +6,29 @@ import type { FaqItem } from "./site";
  */
 
 export type ImportReason = { title: string; text: string };
-export type ImportFact = { value: string; unit: string; label: string };
+export type ImportFact = {
+  value: string;
+  unit: string;
+  label: string;
+  /** Secondary figure shown under the label, e.g. «oder 20’000 km». */
+  note?: { prefix: string; value: string; unit: string };
+};
+
+/** A place on the import globe (WGS84). */
+export type GeoPlace = { name: string; lat: number; lng: number };
+export type ImportRegion = "usa" | "germany";
+export type ImportRoute = {
+  region: ImportRegion;
+  /** Legend label, e.g. «USA» */
+  label: string;
+  /** Delivery time to Thalwil (BRIEF: USA 6–8 Wochen, Deutschland 2 Wochen). */
+  duration: string;
+  /**
+   * Illustrative departure points for the route arcs. They are NOT partner locations and are
+   * never labelled on the globe — the legend only names the country.
+   */
+  origins: GeoPlace[];
+};
 
 /** «Warum importieren» — arguments condensed from the original FAQ. */
 export const importReasons: ImportReason[] = [
@@ -28,12 +50,56 @@ export const importReasons: ImportReason[] = [
   },
 ];
 
-/** Key figures shown next to the process. */
+/** Key figures shown next to the process (count up on scroll). */
 export const importFacts: ImportFact[] = [
   { value: "6–8", unit: "Wochen", label: "Lieferfrist aus den USA" },
   { value: "2", unit: "Wochen", label: "Lieferfrist aus Deutschland" },
-  { value: "12", unit: "Monate", label: "Mindestgarantie auf Occasionen – oder 20’000 km" },
+  {
+    value: "12",
+    unit: "Monate",
+    label: "Mindestgarantie auf Occasionen",
+    note: { prefix: "oder", value: "20’000", unit: "km" },
+  },
 ];
+
+/** Destination of every route: the showroom in Thalwil (site.address.geo, rounded). */
+export const importDestination: GeoPlace = { name: "Thalwil", lat: 47.29, lng: 8.56 };
+
+/** Route arcs on the import globe — USA first (the long way), then Germany. */
+export const importRoutes: ImportRoute[] = [
+  {
+    region: "usa",
+    label: "USA",
+    duration: "6–8 Wochen",
+    origins: [
+      { name: "Los Angeles", lat: 34.05, lng: -118.24 },
+      { name: "Miami", lat: 25.76, lng: -80.19 },
+      { name: "New York", lat: 40.71, lng: -74.01 },
+    ],
+  },
+  {
+    region: "germany",
+    label: "Deutschland",
+    duration: "2 Wochen",
+    origins: [
+      { name: "Stuttgart", lat: 48.78, lng: 9.18 },
+      { name: "München", lat: 48.14, lng: 11.58 },
+      { name: "Bremen", lat: 53.08, lng: 8.8 },
+    ],
+  },
+];
+
+/** Accessible summary of the globe graphic (the canvas itself is decorative). */
+export const importGlobeLabel =
+  "Weltkugel mit den Importrouten nach Thalwil: aus den USA in sechs bis acht Wochen, aus Deutschland in zwei Wochen.";
+
+/** Home page section «Direktimport» (ImportGlobe). */
+export const importTeaser = {
+  eyebrow: "Direktimport",
+  title: "Ihr Wunschfahrzeug.",
+  accent: "Aus der EU und den USA.",
+  lead: "Wir vergleichen die Preise in der Schweiz, im EU-Ausland und in den USA, organisieren Dokumente, Transport, Verzollung und MFK – und übergeben Ihnen das Fahrzeug schlüsselfertig in Thalwil.",
+};
 
 /** FAQ in polished Swiss German (ss, CHF, 20’000 km). Feeds the accordion and the FAQPage JSON-LD. */
 export const importFaq: FaqItem[] = [

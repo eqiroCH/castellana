@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cn } from "@/lib/cn";
 import { pageMetadata } from "@/lib/metadata";
 import { importFacts, importFaq, importReasons } from "@/content/import";
 import { site } from "@/content/site";
@@ -11,10 +12,11 @@ import { Reveal } from "@/components/ui/Reveal";
 import { Section } from "@/components/ui/Section";
 import { CtaBand } from "@/components/sections/CtaBand";
 import { Faq, faqPageJsonLd } from "@/components/sections/Faq";
-import { PageHero } from "@/components/sections/PageHero";
 import { ProcessSteps } from "@/components/sections/ProcessSteps";
 import { QuoteFeature } from "@/components/sections/QuoteFeature";
 import { SectionHeader } from "@/components/sections/SectionHeader";
+import { CountUp } from "@/components/scroll/CountUp";
+import { Globe } from "@/components/three/Globe";
 
 const title = "Luxus- und Sportwagen Import Schweiz";
 const description =
@@ -33,26 +35,48 @@ export default function ImportPage() {
     <>
       <JsonLd data={faqPageJsonLd(importFaq)} />
 
-      <PageHero
-        eyebrow="Direktimport"
-        title={
-          <>
-            Ihr Wunschfahrzeug. <em>Importiert zu Top-Preisen.</em>
-          </>
-        }
-        lead="Aus der EU oder den USA: Wir vergleichen die Preise, organisieren Dokumente, Transport, Verzollung und MFK – und übergeben Ihnen das Fahrzeug schlüsselfertig in Thalwil."
-        image="porsche-gt3-rear"
-        imagePosition="50% 60%"
-      >
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <ButtonLink href="/kontakt/?anliegen=import" icon="arrow">
-            Wunschfahrzeug anfragen
-          </ButtonLink>
-          <ButtonLink href="#ablauf" variant="outline">
-            So funktioniert’s
-          </ButtonLink>
-        </div>
-      </PageHero>
+      {/* Hero: headline left, globe right (mobile: globe between headline and lead) */}
+      <section className="tone-dark relative isolate overflow-hidden border-b border-line" aria-labelledby="page-title">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_55%_at_74%_56%,rgb(227_6_19/0.09),transparent_70%)] max-lg:bg-[radial-gradient(80%_40%_at_50%_58%,rgb(227_6_19/0.08),transparent_70%)]"
+        />
+        <Container
+          className={cn(
+            "grid pt-36 pb-14 md:pb-20 lg:min-h-[88svh] lg:gap-x-10 lg:pt-28 lg:pb-16",
+            "[grid-template-areas:'head'_'globe'_'body'] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:grid-rows-[1fr_auto_auto_1fr] lg:[grid-template-areas:'._globe'_'head_globe'_'body_globe'_'._globe']",
+          )}
+        >
+          <div className="[grid-area:head]">
+            <Eyebrow className="hero-fade">Direktimport</Eyebrow>
+            <h1
+              id="page-title"
+              className="hero-fade mt-6 max-w-3xl font-display text-display-xl text-fg lg:text-display-lg [&_em]:italic [&_em]:text-fg/70"
+            >
+              Ihr Wunschfahrzeug. <em>Importiert zu Top-Preisen.</em>
+            </h1>
+          </div>
+
+          <div className="hero-fade mx-auto mt-10 w-[min(100%,25rem)] [--fade-delay:200ms] [grid-area:globe] lg:mt-0 lg:w-full lg:max-w-[45rem] lg:self-center">
+            <Globe focus="thalwil" showRoutes />
+          </div>
+
+          <div className="hero-fade mt-10 [--fade-delay:120ms] [grid-area:body] lg:mt-8">
+            <p className="max-w-xl text-lead text-paper/80">
+              Aus der EU oder den USA: Wir vergleichen die Preise, organisieren Dokumente, Transport, Verzollung und MFK
+              – und übergeben Ihnen das Fahrzeug schlüsselfertig in Thalwil.
+            </p>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/kontakt/?anliegen=import" icon="arrow">
+                Wunschfahrzeug anfragen
+              </ButtonLink>
+              <ButtonLink href="#ablauf" variant="outline">
+                So funktioniert’s
+              </ButtonLink>
+            </div>
+          </div>
+        </Container>
+      </section>
 
       {/* Why import */}
       <Section tone="light" aria-labelledby="why-title">
@@ -102,11 +126,18 @@ export default function ImportPage() {
 
           <Reveal>
             <dl className="mt-20 grid gap-x-8 gap-y-10 border-t border-line pt-10 sm:grid-cols-3 md:mt-28">
-              {importFacts.map((fact) => (
+              {importFacts.map((fact, i) => (
                 <div key={fact.label} className="flex flex-col-reverse justify-end gap-3">
-                  <dt className="max-w-[16rem] text-[0.8125rem] leading-snug text-muted">{fact.label}</dt>
-                  <dd className="font-display text-[clamp(2.75rem,4.5vw,4rem)] leading-none tracking-tight text-fg tabular">
-                    {fact.value}
+                  <dt className="max-w-[16rem] text-[0.8125rem] leading-snug text-muted">
+                    {fact.label}
+                    {fact.note && (
+                      <span className="mt-1.5 block text-fg/80">
+                        {fact.note.prefix} <CountUp value={fact.note.value} delay={i * 150 + 300} /> {fact.note.unit}
+                      </span>
+                    )}
+                  </dt>
+                  <dd className="font-display text-[clamp(2.75rem,4.5vw,4rem)] leading-none tracking-tight text-fg">
+                    <CountUp value={fact.value} delay={i * 150} />
                     <span className="ml-2 font-sans text-[0.8125rem] font-semibold uppercase tracking-[0.16em] text-muted">
                       {fact.unit}
                     </span>

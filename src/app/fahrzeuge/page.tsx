@@ -12,6 +12,7 @@ import { Section } from "@/components/ui/Section";
 import { PageHero } from "@/components/sections/PageHero";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import { VisitBand } from "@/components/sections/VisitBand";
+import { CountUp } from "@/components/scroll/CountUp";
 import { AutoScoutWidget } from "@/components/vehicles/AutoScoutWidget";
 import { VehicleCard } from "@/components/vehicles/VehicleCard";
 
@@ -50,11 +51,11 @@ export default function FahrzeugePage() {
           </ButtonLink>
         </div>
         <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-6 border-t border-line pt-6 md:mt-16 md:grid-cols-4">
-          {trust.map((item) => (
+          {trust.map((item, i) => (
             <div key={item.label} className="flex flex-col-reverse justify-end gap-1.5">
               <dt className="text-[0.75rem] text-muted">{item.label}</dt>
               <dd className="font-display text-[1.75rem] leading-none tracking-tight text-fg tabular md:text-[2rem]">
-                {item.value}
+                <CountUp value={item.value} delay={600 + i * 120} />
                 {item.suffix && (
                   <span aria-hidden="true" className="ml-1 align-[0.35em] text-[0.55em] text-brand">
                     {item.suffix}
