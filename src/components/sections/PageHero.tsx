@@ -1,9 +1,12 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { MediaSlug } from "@/content/media";
 import { cn } from "@/lib/cn";
 import { Container } from "@/components/ui/Container";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
+import { SplitReveal } from "@/components/motion/SplitReveal";
+
+const fade = (ms: number) => ({ "--fade-delay": `${ms}ms` }) as CSSProperties;
 
 type PageHeroProps = {
   eyebrow: string;
@@ -21,6 +24,7 @@ type PageHeroProps = {
 /**
  * Dark page opener for all sub-pages. Sits under the transparent header, so it always
  * starts with enough top padding. With an image it becomes a cinematic band.
+ * The title rises word by word on first paint (CSS only, see <SplitReveal trigger="load">).
  */
 export function PageHero({ eyebrow, title, lead, image, imagePosition, children }: PageHeroProps) {
   return (
@@ -40,11 +44,21 @@ export function PageHero({ eyebrow, title, lead, image, imagePosition, children 
         )}
       >
         <Eyebrow className="hero-fade">{eyebrow}</Eyebrow>
-        <h1 id="page-title" className="hero-fade mt-6 max-w-5xl font-display text-display-xl text-fg [&_em]:italic [&_em]:text-fg/70">
-          {title}
+        <h1 id="page-title" className="mt-6 max-w-5xl font-display text-display-xl text-fg [&_em]:italic [&_em]:text-fg/70">
+          <SplitReveal trigger="load" delay={120}>
+            {title}
+          </SplitReveal>
         </h1>
-        {lead && <div className="hero-fade mt-7 max-w-2xl text-lead text-paper/80">{lead}</div>}
-        {children && <div className="hero-fade mt-10">{children}</div>}
+        {lead && (
+          <div className="hero-fade mt-7 max-w-2xl text-lead text-paper/80" style={fade(450)}>
+            {lead}
+          </div>
+        )}
+        {children && (
+          <div className="hero-fade mt-10" style={fade(600)}>
+            {children}
+          </div>
+        )}
       </Container>
     </section>
   );

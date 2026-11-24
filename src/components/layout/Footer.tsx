@@ -4,6 +4,7 @@ import { addressLine, formatSlots, legalNavigation, navigation, site } from "@/c
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { ArrowUpRight } from "@/components/ui/Icons";
+import { FooterWordmark } from "@/components/motion/FooterWordmark";
 import { NewsletterForm } from "./NewsletterForm";
 
 const linkClass = "inline-flex min-h-9 items-center text-muted transition-colors hover:text-fg";
@@ -22,7 +23,7 @@ export function Footer() {
       <Container className="grid gap-14 py-20 md:grid-cols-2 lg:grid-cols-12 lg:gap-10 lg:py-24">
         {/* Brand */}
         <div className="lg:col-span-4">
-          <Link href="/" className="inline-flex text-fg" aria-label="Castellana Automobile AG – zur Startseite">
+          <Link href="/" className="group/logo inline-flex text-fg" aria-label="Castellana Automobile AG – zur Startseite">
             <Logo className="h-5 w-auto" />
           </Link>
           <p className="mt-8 max-w-xs font-display text-[1.75rem] leading-[1.15] tracking-tight text-fg">
@@ -135,6 +136,8 @@ export function Footer() {
           </ul>
         </Container>
       </div>
+
+      <FooterWordmark />
     </footer>
   );
 }

@@ -94,7 +94,8 @@ async function main() {
   const port = Number(process.env.PORT ?? 4173);
   const server = process.env.BASE_URL ? null : await serveOut(port);
   const baseUrl = process.env.BASE_URL ?? `http://localhost:${port}`;
-  const browser = await chromium.launch();
+  // Falls Playwrights eigener Chromium fehlt, auf das installierte Chrome ausweichen.
+  const browser = await chromium.launch().catch(() => chromium.launch({ channel: "chrome" }));
 
   try {
     for (const vp of viewports) {

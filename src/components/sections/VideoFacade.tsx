@@ -63,6 +63,7 @@ export function VideoFacade({ id, title, posterScale, className }: VideoFacadePr
           type="button"
           onClick={() => setActive(true)}
           aria-label={`Video abspielen: ${title}`}
+          data-cursor="Abspielen"
           className="group/video absolute inset-0 block size-full cursor-pointer text-left focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-paper"
         >
           {posterFailed ? (

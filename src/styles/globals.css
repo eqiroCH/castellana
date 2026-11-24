@@ -53,6 +53,7 @@
 
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Tone-aware tokens + fonts from next/font (variables live on <html>). */
@@ -163,7 +164,12 @@
   .js [data-reveal]:not([data-revealed]) {
     opacity: 0;
     transform: translate3d(0, 12px, 0);
-    /* Safety net: never keep content hidden if hydration is slow or fails. */
+  }
+
+  /* Safety net: never keep content hidden if hydration is slow or fails. Once <MotionProvider>
+     has mounted (html[data-motion="ready"]) the observers take over, so scroll reveals still
+     play further down the page. */
+  html.js:not([data-motion="ready"]) [data-reveal]:not([data-revealed]) {
     animation: reveal-fallback 0s linear 2.5s forwards;
   }
 
@@ -226,7 +232,556 @@
   }
 }
 
-/* Mobile menu dialog (native <dialog>) */
+/* Opacity-only safety net (keeps hover transforms intact). */
+@keyframes appear-fallback {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Smooth scroll — Lenis (src/components/motion/MotionProvider.tsx)
+   ========================================================================== */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
+.lenis [data-lenis-prevent],
+.lenis dialog {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Split-text reveal — <SplitReveal> (src/components/motion/SplitReveal.tsx)
+   Words rise out of a clipped mask. clip-path keeps the layout and baseline of
+   plain text (no overflow box), the generous negative inset keeps accents,
+   descenders and italic overhangs visible.
+   ========================================================================== */
+
+.split-word {
+  display: inline-block;
+  clip-path: inset(-0.32em -0.22em -0.26em -0.22em);
+}
+
+.split-inner {
+  display: inline-block;
+  transform-origin: 0% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-split="inview"] .split-inner {
+    transition:
+      transform 1150ms var(--ease-out-expo),
+      opacity 700ms var(--ease-out-quart);
+  }
+
+  .js [data-split="inview"]:not([data-revealed]) .split-inner {
+    opacity: 0;
+    transform: translate3d(0, 112%, 0) rotate(3deg);
+  }
+
+  html.js:not([data-motion="ready"]) [data-split="inview"]:not([data-revealed]) .split-inner {
+    animation: reveal-fallback 0s linear 2.5s forwards;
+  }
+
+  .js [data-split="load"] .split-inner {
+    animation: split-rise 1250ms var(--ease-out-expo) both;
+    animation-delay: calc(var(--split-delay, 140ms) + var(--i, 0) * 55ms);
+  }
+}
+
+@keyframes split-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 112%, 0) rotate(3deg);
+  }
+}
+
+/* ==========================================================================
+   Editorial details — hairlines, section numerals, Ken Burns
+   ========================================================================== */
+
+.draw-line {
+  position: relative;
+  height: 1px;
+}
+
+.draw-line::before,
+.draw-line--accent::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  transform-origin: 0 50%;
+}
+
+.draw-line::before {
+  right: 0;
+  background: var(--tone-line-strong);
+}
+
+.draw-line--accent::after {
+  top: -0.5px;
+  height: 2px;
+  width: clamp(2.5rem, 5vw, 4.5rem);
+  background: var(--color-brand);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .draw-line::before {
+    transition: transform 1700ms var(--ease-out-expo) calc(var(--draw-delay, 0ms) + 150ms);
+  }
+
+  .js .draw-line::after {
+    transition: transform 1000ms var(--ease-out-expo) var(--draw-delay, 0ms);
+  }
+
+  .js .draw-line:not([data-inview])::before,
+  .js .draw-line:not([data-inview])::after {
+    transform: scaleX(0);
+  }
+
+  html.js:not([data-motion="ready"]) .draw-line:not([data-inview])::before,
+  html.js:not([data-motion="ready"]) .draw-line:not([data-inview])::after {
+    animation: reveal-fallback 0s linear 2.5s forwards;
+  }
+}
+
+/* Faint oversized outline numerals («01» …). In the components layer so size/position
+   utilities on the element win. */
+@layer components {
+  .section-index {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(5.5rem, 12.5vw, 12.5rem);
+    line-height: 0.74;
+    letter-spacing: -0.045em;
+    font-variant-numeric: lining-nums;
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--tone-fg) 26%, transparent);
+    user-select: none;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ken-burns {
+    animation: ken-burns 28s ease-in-out infinite alternate;
+    transform-origin: 40% 60%;
+  }
+}
+
+@keyframes ken-burns {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.15) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+/* Diagonal light sweep: buttons (.fx-sweep) and media in a hovered .group (.fx-glint).
+   Components layer: positioning utilities on a button still win. */
+@layer components {
+  .fx-sweep {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .fx-sweep::before,
+  .fx-glint::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform: translate3d(-115%, 0, 0);
+  }
+
+  .fx-sweep::before {
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 22%, rgb(255 255 255 / 0.26) 50%, transparent 78%);
+  }
+
+  .fx-glint::after {
+    inset: -10% -30%;
+    mix-blend-mode: screen;
+    background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / 0.2) 50%, transparent 62%);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .fx-sweep:hover::before,
+  .group:hover .fx-glint::after {
+    transform: translate3d(115%, 0, 0);
+    transition: transform 1000ms var(--ease-out-quart);
+  }
+}
+
+/* ==========================================================================
+   Pointer effects — cursor, tilt sheen, gallery flashlight
+   ========================================================================== */
+
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out-quart);
+  view-transition-name: cursor;
+}
+
+.cursor[data-visible="true"]:not([data-state="hidden"]) {
+  opacity: 1;
+}
+
+html:has(dialog[open]) .cursor {
+  opacity: 0;
+}
+
+.cursor-press {
+  position: relative;
+  transition: transform 260ms var(--ease-out-quart);
+}
+
+.cursor[data-pressed] .cursor-press {
+  transform: scale(0.82);
+}
+
+.cursor-dot,
+.cursor-ring,
+.cursor-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  background: var(--color-brand);
+  transition:
+    transform 550ms var(--ease-out-expo),
+    opacity 250ms var(--ease-out-quart);
+}
+
+.cursor-ring {
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border: 1px solid currentColor;
+  opacity: 0;
+  transform: scale(0.15) rotate(-90deg);
+  transition:
+    transform 600ms var(--ease-out-expo),
+    opacity 300ms var(--ease-out-quart);
+}
+
+.cursor-label {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  color: #fff;
+  font: 600 0.625rem/1 var(--font-sans);
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    transform 500ms var(--ease-out-expo),
+    opacity 200ms var(--ease-out-quart);
+}
+
+.cursor[data-state="link"] .cursor-dot {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.cursor[data-state="link"] .cursor-ring {
+  opacity: 1;
+  transform: none;
+}
+
+.cursor[data-state="label"] .cursor-dot {
+  transform: scale(12);
+}
+
+.cursor[data-state="label"] .cursor-label {
+  opacity: 1;
+  transform: none;
+  transition-delay: 90ms;
+}
+
+/* Hide the native cursor while ours is active — except where precision matters. */
+@media (hover: hover) and (pointer: fine) {
+  html[data-has-cursor]:not(:has(dialog[open])),
+  html[data-has-cursor]:not(:has(dialog[open])) * {
+    cursor: none;
+  }
+
+  html[data-has-cursor]
+    :is(input, textarea, select, iframe, [contenteditable="true"], [data-native-cursor], [data-native-cursor] *, .hci-container, .hci-container *) {
+    cursor: revert-layer;
+  }
+}
+
+/* Vehicle card tilt (src/components/motion/Tilt.tsx) */
+.tilt-inner {
+  transform-origin: 50% 50%;
+}
+
+.tilt-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    circle 22rem at var(--mx, 50%) var(--my, 30%),
+    rgb(255 255 255 / 0.3),
+    rgb(255 255 255 / 0.08) 35%,
+    transparent 70%
+  );
+  transition: opacity 600ms var(--ease-out-quart);
+}
+
+.tilt-inner[data-tilt="on"] .tilt-sheen {
+  opacity: 1;
+}
+
+/* Gallery: lights on + flashlight (src/components/motion/SpotlightGrid.tsx) */
+.spotlight-overlay {
+  position: absolute;
+  inset: -2px;
+  z-index: 1;
+  pointer-events: none;
+  background: rgb(11 11 13 / 0.64);
+  opacity: 0;
+  transition: opacity 700ms var(--ease-out-quart);
+  -webkit-mask-image: radial-gradient(
+    circle 210px at var(--spot-x, 50%) var(--spot-y, 50%),
+    transparent 0%,
+    rgb(0 0 0 / 0.08) 42%,
+    rgb(0 0 0 / 0.7) 78%,
+    #000 100%
+  );
+  mask-image: radial-gradient(
+    circle 210px at var(--spot-x, 50%) var(--spot-y, 50%),
+    transparent 0%,
+    rgb(0 0 0 / 0.08) 42%,
+    rgb(0 0 0 / 0.7) 78%,
+    #000 100%
+  );
+}
+
+.spotlight[data-spot="on"] > .spotlight-overlay {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-lights]:not([data-lit]) .lights-tile img {
+    opacity: 0;
+  }
+
+  html.js:not([data-motion="ready"]) [data-lights]:not([data-lit]) .lights-tile img {
+    animation: appear-fallback 0s linear 2.5s forwards;
+  }
+
+  .js [data-lights][data-lit] .lights-tile img {
+    animation: tube-on 1100ms linear both;
+    animation-delay: calc(var(--i, 0) * 75ms);
+  }
+}
+
+/* Fluorescent tube switching on: two quick stutters, then full light. */
+@keyframes tube-on {
+  0% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.55;
+  }
+  9% {
+    opacity: 0.05;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  18% {
+    opacity: 0.12;
+  }
+  27% {
+    opacity: 0.9;
+  }
+  31% {
+    opacity: 0.45;
+  }
+  44%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Brand marquee (src/components/motion/BrandMarquee.tsx)
+   ========================================================================== */
+
+.marquee {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(2.25rem, 5vw, 4.5rem);
+  border-bottom: 1px solid var(--tone-line);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+.marquee-group,
+.marquee-item {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.marquee-word {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 9vw, 9rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  color: var(--tone-fg);
+  padding-inline: 0.06em;
+}
+
+.marquee-word--outline {
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(244 242 238 / 0.6);
+}
+
+.marquee-sep {
+  width: clamp(0.5rem, 0.9vw, 0.875rem);
+  height: clamp(0.5rem, 0.9vw, 0.875rem);
+  margin-inline: clamp(1.5rem, 3.2vw, 3.25rem);
+  background: var(--color-brand);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track {
+    animation: marquee 120s linear infinite;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-group + .marquee-group {
+    display: none;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ==========================================================================
+   Header choreography (src/components/layout/Header.tsx)
+   ========================================================================== */
+
+.site-header {
+  transition:
+    transform 700ms var(--ease-out-expo),
+    opacity 800ms var(--ease-out-quart);
+}
+
+/* Hidden while scrolling down — but never while it holds keyboard focus. */
+.site-header[data-hidden="true"]:not(:focus-within) {
+  transform: translate3d(0, -100%, 0);
+  transition-duration: 550ms;
+  transition-timing-function: var(--ease-in-out-quart);
+}
+
+/* Home: wait for the intro (html[data-intro]) before fading in. */
+.js .site-header[data-ready="false"] {
+  opacity: 0;
+  transform: translate3d(0, -1.25rem, 0);
+  pointer-events: none;
+}
+
+html.js:not([data-motion="ready"]) .site-header[data-ready="false"] {
+  animation: header-fallback 0s linear 4s forwards;
+}
+
+html[data-intro="running"] .site-header {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@keyframes header-fallback {
+  to {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+}
+
+.site-header-shade,
+.site-header-solid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 500ms var(--ease-out-quart);
+}
+
+.site-header-shade {
+  background: linear-gradient(to bottom, rgb(11 11 13 / 0.7), transparent);
+}
+
+.site-header-solid {
+  opacity: 0;
+  border-bottom: 1px solid var(--tone-line);
+  background: rgb(11 11 13 / 0.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
+}
+
+.site-header[data-scrolled="true"] .site-header-shade {
+  opacity: 0;
+}
+
+.site-header[data-scrolled="true"] .site-header-solid {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Mobile menu dialog (native <dialog>, src/components/layout/MobileNav.tsx)
+   ========================================================================== */
+
 dialog.menu-dialog {
   max-width: none;
   max-height: none;
@@ -237,7 +792,10 @@ dialog.menu-dialog {
   border: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: var(--color-ink);
+  background:
+    radial-gradient(90% 55% at 100% 0%, rgb(227 6 19 / 0.16), transparent 70%),
+    radial-gradient(70% 45% at 0% 100%, rgb(227 6 19 / 0.07), transparent 70%),
+    var(--color-ink);
   color: var(--color-paper);
   opacity: 0;
   transition:
@@ -258,4 +816,182 @@ dialog.menu-dialog[open] {
 
 dialog.menu-dialog::backdrop {
   background: transparent;
+}
+
+.menu-line {
+  display: block;
+  clip-path: inset(-0.3em -0.4em -0.3em -0.2em);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog.menu-dialog[open] .menu-rise {
+    animation: menu-rise 950ms var(--ease-out-expo) both;
+    animation-delay: calc(120ms + var(--i, 0) * 60ms);
+  }
+
+  dialog.menu-dialog[open] .menu-fade {
+    animation: hero-fade 900ms var(--ease-out-quart) both;
+    animation-delay: calc(120ms + var(--i, 0) * 60ms);
+  }
+}
+
+@keyframes menu-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 105%, 0) rotate(2.5deg);
+  }
+}
+
+/* ==========================================================================
+   Footer wordmark (src/components/motion/FooterWordmark.tsx)
+   ========================================================================== */
+
+.footer-wordmark {
+  overflow: clip;
+  user-select: none;
+}
+
+.footer-wordmark-word {
+  display: flex;
+  justify-content: space-between;
+  /* Instrument Serif caps measure ~4.4 em for «CASTELLANA»: 20vw fills the width between the
+     gutters at every viewport; space-between spreads the remainder evenly. */
+  padding: clamp(1.5rem, 3vw, 3rem) var(--spacing-gutter) clamp(1rem, 2vw, 2rem);
+  font-family: var(--font-display);
+  font-size: 20vw;
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.footer-wordmark-word span {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(244 242 238 / 0.32);
+  transition:
+    color 1600ms var(--ease-out-quart),
+    -webkit-text-stroke-color 1600ms var(--ease-out-quart);
+}
+
+@media (hover: hover) {
+  .footer-wordmark-word span:hover {
+    color: var(--color-paper);
+    -webkit-text-stroke-color: var(--color-paper);
+    transition-duration: 140ms;
+  }
+}
+
+/* ==========================================================================
+   Page transitions — View Transitions API
+   Client-side navigations: <PageTransition> (React <ViewTransition>) captures the
+   old and new <main> as `.page-exit` / `.page-enter`. Full document navigations:
+   @view-transition animates `root` with the same keyframes. The header and the
+   cursor stay put, a red hairline (.vt-wipe) crosses the viewport.
+   ========================================================================== */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* Persistent element captured as the red hairline; hidden behind <body> normally. */
+.vt-wipe {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  z-index: -1;
+  width: 100%;
+  height: 1px;
+  background: var(--color-brand);
+  pointer-events: none;
+  view-transition-name: page-wipe;
+}
+
+/* Named only while a transition runs: a view-transition-name makes the element a backdrop
+   root, which would switch off the header's backdrop blur the rest of the time. */
+html:active-view-transition .site-header {
+  view-transition-name: site-header;
+}
+
+::view-transition {
+  pointer-events: none;
+  background-color: var(--color-ink);
+}
+
+::view-transition-old(root),
+::view-transition-old(.page-exit) {
+  animation: vt-page-out 420ms var(--ease-in-out-quart) both;
+}
+
+::view-transition-new(root),
+::view-transition-new(.page-enter) {
+  animation: vt-page-in 760ms var(--ease-out-expo) 260ms both;
+}
+
+::view-transition-group(site-header),
+::view-transition-group(cursor) {
+  animation: none;
+  z-index: 50;
+}
+
+::view-transition-old(site-header),
+::view-transition-old(cursor),
+::view-transition-old(page-wipe) {
+  display: none;
+}
+
+::view-transition-new(site-header),
+::view-transition-new(cursor),
+::view-transition-new(page-wipe) {
+  animation: none;
+}
+
+::view-transition-group(page-wipe) {
+  z-index: 40;
+  animation: vt-wipe 900ms var(--ease-in-out-quart) both;
+}
+
+@keyframes vt-page-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+@keyframes vt-page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+}
+
+@keyframes vt-wipe {
+  0% {
+    scale: 0 1;
+    transform-origin: 0 0;
+  }
+  46% {
+    scale: 1 1;
+    transform-origin: 0 0;
+  }
+  54% {
+    scale: 1 1;
+    transform-origin: 100% 0;
+  }
+  100% {
+    scale: 0 1;
+    transform-origin: 100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  ::view-transition-group(page-wipe) {
+    display: none;
+  }
 }

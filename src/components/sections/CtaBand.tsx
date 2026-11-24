@@ -7,6 +7,8 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Heading } from "@/components/ui/Heading";
 import { Photo } from "@/components/ui/Photo";
 import { Reveal } from "@/components/ui/Reveal";
+import { DrawLine } from "@/components/motion/DrawLine";
+import { SplitReveal } from "@/components/motion/SplitReveal";
 
 type CtaBandProps = {
   eyebrow: string;
@@ -39,20 +41,29 @@ export function CtaBand({ eyebrow, title, lead, children, image, imagePosition, 
         </div>
       )}
       <Container className="py-section">
-        <Reveal className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-8">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-8">
           <div className="lg:col-span-8">
-            <Eyebrow>{eyebrow}</Eyebrow>
+            <Reveal>
+              <Eyebrow>{eyebrow}</Eyebrow>
+            </Reveal>
             <Heading id={id} size="xl" className="mt-6">
-              {title}
+              <SplitReveal>{title}</SplitReveal>
             </Heading>
-            {lead && <div className="mt-6 max-w-xl text-lead text-paper/80">{lead}</div>}
+            {lead && (
+              <Reveal delay={200}>
+                <div className="mt-6 max-w-xl text-lead text-paper/80">{lead}</div>
+              </Reveal>
+            )}
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:col-span-4 lg:flex-col lg:items-stretch">{children}</div>
-        </Reveal>
+          <Reveal delay={280} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:col-span-4 lg:flex-col lg:items-stretch">
+            {children}
+          </Reveal>
+        </div>
 
         {showContact && (
           <Reveal delay={100}>
-            <div className="mt-14 flex flex-col gap-x-10 gap-y-1 border-t border-line pt-6 text-[0.9375rem] sm:flex-row sm:flex-wrap sm:items-center md:mt-20">
+            <DrawLine className="mt-14 md:mt-20" />
+            <div className="flex flex-col gap-x-10 gap-y-1 pt-6 text-[0.9375rem] sm:flex-row sm:flex-wrap sm:items-center">
               <span className="text-muted">Lieber persönlich?</span>
               <a href={site.phone.href} className="inline-flex min-h-11 items-center text-fg underline-offset-4 hover:underline tabular">
                 {site.phone.display}

@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { media, type MediaSlug } from "@/content/media";
 import type { GalleryLayout, GalleryPhoto } from "@/content/showroom";
 import { cn } from "@/lib/cn";
 import { ArrowRight, CloseIcon } from "@/components/ui/Icons";
 import { Photo } from "@/components/ui/Photo";
-import { Reveal } from "@/components/ui/Reveal";
+import { SpotlightGrid } from "@/components/motion/SpotlightGrid";
 
 type GalleryProps = {
   photos: readonly GalleryPhoto[];
@@ -58,6 +58,7 @@ const navButton =
  * Photo grid with an accessible lightbox built on the native modal <dialog>:
  * focus stays inside, the page behind is inert, Esc closes, ← / → (and swipe) navigate,
  * focus returns to the tile of the last viewed photo. Without JS the tiles link to the image.
+ * Tiles switch on like showroom lights; on desktop a flashlight follows the pointer.
  */
 export function Gallery({ photos, label, children }: GalleryProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -137,44 +138,53 @@ export function Gallery({ photos, label, children }: GalleryProps) {
 
   return (
     <>
-      <ul className="grid grid-cols-2 gap-2 md:gap-3 lg:grid-cols-12">
-        {photos.map((photo, i) => {
-          const layout = layouts[photo.layout];
-          return (
-            <Reveal as="li" key={photo.media} delay={(i % 3) * 80} className={cn("group relative overflow-hidden bg-surface", layout.className)}>
-              <a
-                ref={(el) => {
-                  tileRefs.current[i] = el;
-                }}
-                href={largestSrc(photo.media)}
-                onClick={openAt(i)}
-                aria-haspopup="dialog"
-                className="absolute inset-0 block focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-paper"
+      <SpotlightGrid>
+        <ul className="grid grid-cols-2 gap-2 md:gap-3 lg:grid-cols-12">
+          {photos.map((photo, i) => {
+            const layout = layouts[photo.layout];
+            return (
+              <li
+                key={photo.media}
+                style={{ "--i": i } as CSSProperties}
+                className={cn("lights-tile group relative overflow-hidden bg-surface", layout.className)}
               >
-                <Photo
-                  media={photo.media}
-                  alt={altOf(photo)}
-                  sizes={layout.sizes}
-                  position={photo.position}
-                  className="absolute inset-0 size-full object-cover brightness-[0.92] saturate-[0.85] transition-[transform,filter] duration-[1400ms] ease-out-quart group-hover:scale-[1.03] group-hover:brightness-100 group-hover:saturate-100"
-                />
-                <span className="sr-only"> – vergrössern</span>
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-3 right-3 grid size-10 place-items-center bg-ink/70 text-paper opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 md:bottom-4 md:right-4"
+                <a
+                  ref={(el) => {
+                    tileRefs.current[i] = el;
+                  }}
+                  href={largestSrc(photo.media)}
+                  onClick={openAt(i)}
+                  aria-haspopup="dialog"
+                  data-cursor="Öffnen"
+                  className="absolute inset-0 block focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-paper"
                 >
-                  <ExpandIcon />
-                </span>
-              </a>
-            </Reveal>
-          );
-        })}
-        {children && <li className="col-span-2 lg:col-span-4">{children}</li>}
-      </ul>
+                  <Photo
+                    media={photo.media}
+                    alt={altOf(photo)}
+                    sizes={layout.sizes}
+                    position={photo.position}
+                    className="absolute inset-0 size-full object-cover brightness-[0.92] saturate-[0.85] transition-[transform,filter] duration-[1400ms] ease-out-quart group-hover:scale-[1.03] group-hover:brightness-100 group-hover:saturate-100"
+                  />
+                  <span className="sr-only"> – vergrössern</span>
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-3 right-3 grid size-10 place-items-center bg-ink/70 text-paper opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 md:bottom-4 md:right-4"
+                  >
+                    <ExpandIcon />
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+          {/* Above the flashlight overlay (z-1): editorial text is never dimmed. */}
+          {children && <li className="relative z-[2] col-span-2 lg:col-span-4">{children}</li>}
+        </ul>
+      </SpotlightGrid>
 
       <dialog
         ref={dialogRef}
         aria-label={label}
+        data-lenis-prevent=""
         onKeyDown={onKeyDown}
         className="m-0 h-dvh max-h-none w-full max-w-none border-0 bg-ink p-0 text-paper opacity-0 transition-[opacity,overlay,display] transition-discrete duration-300 ease-out-quart backdrop:bg-ink/60 open:opacity-100 starting:open:opacity-0"
       >

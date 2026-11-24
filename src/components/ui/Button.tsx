@@ -10,7 +10,8 @@ const base =
   "group/button inline-flex items-center justify-center gap-3 whitespace-nowrap font-sans font-semibold uppercase tracking-[0.16em] transition-[background-color,border-color,color] duration-300 ease-out-quart focus-visible:outline-2 focus-visible:outline-offset-4 disabled:pointer-events-none disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand text-white hover:bg-brand-dark focus-visible:outline-fg",
+  // fx-sweep: inner light sweep on hover (globals.css)
+  primary: "fx-sweep bg-brand text-white hover:bg-brand-dark focus-visible:outline-fg",
   outline: "border border-line-strong text-fg hover:border-fg hover:bg-fg hover:text-bg",
   ghost: "text-fg hover:bg-fg/[0.06]",
   link: "min-h-11 gap-2.5 px-0 text-fg underline-offset-[6px] decoration-1 hover:underline",
@@ -20,6 +21,9 @@ const sizes: Record<Size, string> = {
   md: "min-h-13 px-7 text-[0.75rem]",
   sm: "min-h-11 px-5 text-[0.6875rem]",
 };
+
+/** Primary and outline buttons follow the pointer slightly (see motion/Cursor.tsx). */
+const magnetic = (variant: Variant) => (variant === "primary" || variant === "outline" ? "" : undefined);
 
 export function buttonClasses({ variant = "primary", size = "md", className }: { variant?: Variant; size?: Size; className?: string } = {}) {
   return cn(base, variants[variant], variant !== "link" && sizes[size], variant === "link" && "text-[0.75rem]", className);
@@ -67,7 +71,7 @@ export function ButtonLink({ href, variant = "primary", size = "md", icon, child
 
   if (isInternal) {
     return (
-      <Link href={href} className={classes} {...props}>
+      <Link href={href} className={classes} data-magnetic={magnetic(variant)} {...props}>
         {content}
       </Link>
     );
@@ -76,6 +80,7 @@ export function ButtonLink({ href, variant = "primary", size = "md", icon, child
     <a
       href={href}
       className={classes}
+      data-magnetic={magnetic(variant)}
       {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       {...props}
     >
@@ -90,7 +95,7 @@ type ButtonProps = CommonProps & Omit<ComponentPropsWithoutRef<"button">, "child
 /** Native <button> with the same styles (forms, dialogs). */
 export function Button({ variant = "primary", size = "md", icon = "none", children, className, type = "button", ...props }: ButtonProps) {
   return (
-    <button type={type} className={buttonClasses({ variant, size, className })} {...props}>
+    <button type={type} className={buttonClasses({ variant, size, className })} data-magnetic={magnetic(variant)} {...props}>
       <span>{children}</span>
       <ButtonIcon icon={icon} />
     </button>

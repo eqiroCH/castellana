@@ -27,7 +27,15 @@ export function Logo({ className, variant = "full" }: LogoProps) {
       aria-label="Castellana Automobile AG"
       focusable="false"
     >
-      <rect x="0" y="2" width="24" height="24" fill="#E30613" />
+      {/* Turns 90° when a parent `group/logo` is hovered (header). */}
+      <rect
+        x="0"
+        y="2"
+        width="24"
+        height="24"
+        fill="#E30613"
+        className="origin-center transition-transform duration-700 ease-out-expo [transform-box:fill-box] group-hover/logo:rotate-90"
+      />
       <text
         x="35"
         y="24.6"

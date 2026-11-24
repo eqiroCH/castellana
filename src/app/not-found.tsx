@@ -3,6 +3,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
+import { SplitReveal } from "@/components/motion/SplitReveal";
 
 export const metadata: Metadata = {
   title: "Seite nicht gefunden",
@@ -20,10 +21,18 @@ export default function NotFound() {
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/20" />
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-ink to-transparent" />
       </div>
-      <Container className="pb-16 pt-40 md:pb-24">
-        <Eyebrow>Fehler 404</Eyebrow>
+      <Container className="relative pb-16 pt-40 md:pb-24">
+        <span
+          aria-hidden="true"
+          className="section-index hero-fade pointer-events-none absolute -top-2 right-gutter text-[clamp(8rem,26vw,24rem)] md:top-24"
+        >
+          404
+        </span>
+        <Eyebrow className="hero-fade">Fehler 404</Eyebrow>
         <h1 id="nf-title" className="mt-6 max-w-3xl font-display text-display-xl text-fg">
-          Diese Seite ist nicht <em className="text-fg/70">(mehr) verfügbar.</em>
+          <SplitReveal trigger="load" delay={120}>
+            Diese Seite ist nicht <em className="italic text-fg/70">(mehr) verfügbar.</em>
+          </SplitReveal>
         </h1>
         <p className="mt-6 max-w-xl text-lead text-paper/80">
           Vielleicht wurde sie verschoben – oder das gesuchte Fahrzeug hat bereits einen neuen Besitzer gefunden.

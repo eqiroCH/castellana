@@ -4,6 +4,8 @@ import { site } from "@/content/site";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { JsonLd, autoDealerJsonLd } from "@/components/layout/JsonLd";
+import { MotionProvider } from "@/components/motion/MotionProvider";
+import { PageTransition } from "@/components/motion/PageTransition";
 import "@/styles/globals.css";
 
 const display = Instrument_Serif({
@@ -59,10 +61,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Zum Inhalt springen
         </a>
         <Header />
-        <main id="main" tabIndex={-1} className="outline-none">
-          {children}
-        </main>
+        <PageTransition>{children}</PageTransition>
         <Footer />
+        {/* Smooth scroll, custom cursor, magnetic buttons. */}
+        <MotionProvider />
+        {/* Red hairline captured by the page view transition (globals.css → .vt-wipe). */}
+        <div aria-hidden="true" className="vt-wipe" />
         <JsonLd data={autoDealerJsonLd()} />
       </body>
     </html>

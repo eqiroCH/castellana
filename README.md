@@ -81,3 +81,12 @@ scripts/               image-manifest, optimize-images, generate-icons, screensh
 - `forms/ContactForm` – `<ContactForm defaultReason="kommission" tone="dark|light" />`, liest `?anliegen=` und `?fahrzeug=`.
 - `lib/metadata.ts` – `pageMetadata({ title, description, path })` für Canonical, Open Graph und Twitter je Seite.
 - Inhalte je Seite liegen in `src/content/{import,kommission,ueber-uns,showroom,partner}.ts`, globale Fakten in `src/content/site.ts`.
+
+## Motion-Ebene (Phase 3)
+
+- **Intro** (`src/components/intro/`): Scheinwerfer-Sequenz beim ersten Besuch pro Sitzung (`sessionStorage` «castellana:intro»), Timing in `timeline.ts`, Lampenpositionen in `intro.css`. Setzt `html[data-intro="running|done"]`. Nach Bildwechsel `node scripts/hero-variants.mjs` ausführen.
+- **Motion-System** (`src/components/motion/`): `MotionProvider` (Lenis Smooth Scroll, Anker-Links), `Cursor` (eigener Cursor; `data-cursor="Label"`, `data-native-cursor`, `data-magnetic`), `SplitReveal`, `CountUp`, `Tilt`, `SpotlightGrid`, `DrawLine`, `SectionIndex` (`SectionHeader index={n}`), `BrandMarquee`, `FooterWordmark`, `PageTransition` (rendert `<main>`; View Transitions).
+- **Scroll-Helfer** (`src/components/scroll/`): `CountUp`, `ClipReveal`, `Drift`, `ArgumentStack`, gemeinsamer `scroll-loop.ts`; CSS mit Präfix `sc-`.
+- **3D-Globus** (`src/components/three/Globe.tsx`, `cobe`): `<Globe focus="thalwil" showRoutes legend />`, Routen auf 2D-Overlay mit cobe-Projektion, pausiert ausserhalb des Viewports.
+- CSS-Module funktionieren wegen der Turbopack-CSS-Regel in `next.config.ts` nicht; globale Klassen mit Präfix verwenden (`fx-`, `sc-`, `globe-`).
+- Alle Effekte respektieren `prefers-reduced-motion` und rendern ohne JS im Endzustand.

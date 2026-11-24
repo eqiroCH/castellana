@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { MediaSlug } from "@/content/media";
+import { cn } from "@/lib/cn";
 import { Container } from "@/components/ui/Container";
 import { ArrowRight } from "@/components/ui/Icons";
 import { Photo } from "@/components/ui/Photo";
@@ -39,13 +40,17 @@ const services: Array<{ title: string; text: string; href: string; image: MediaS
   },
 ];
 
-/** Four editorial service cards linking to the detail pages. */
+/**
+ * Four editorial service cards linking to the detail pages, set in a staggered rhythm
+ * (every second card lower on desktop). Hover: slow zoom, a diagonal light sweep, arrow nudge.
+ */
 export function Services() {
   return (
     <Section tone="dark" aria-labelledby="services-title" className="border-t border-line">
       <Container>
         <SectionHeader
           id="services-title"
+          index={3}
           eyebrow="Leistungen"
           title={
             <>
@@ -53,20 +58,21 @@ export function Services() {
             </>
           }
         />
-        <ul className="mt-14 grid gap-x-6 gap-y-14 sm:grid-cols-2 md:mt-20 lg:grid-cols-4">
+        <ul className="mt-14 grid gap-x-6 gap-y-14 sm:grid-cols-2 md:mt-20 lg:grid-cols-4 lg:gap-x-8">
           {services.map((service, i) => (
-            <Reveal as="li" key={service.href} delay={i * 90}>
-              <article className="group relative flex h-full flex-col">
-                <div className="relative aspect-[16/10] overflow-hidden bg-surface sm:aspect-[4/5]">
+            <Reveal as="li" key={service.href} delay={i * 90} className={cn(i % 2 === 1 && "lg:mt-28")}>
+              <article data-cursor="Entdecken" className="group relative flex h-full flex-col">
+                <div className="fx-glint relative aspect-[16/10] overflow-hidden bg-surface sm:aspect-[4/5]">
                   <Photo
                     media={service.image}
                     mobileMedia={service.mobileImage}
                     alt=""
                     sizes="(min-width: 1024px) 24vw, (min-width: 640px) 48vw, 100vw"
-                    className="size-full object-cover saturate-[0.8] transition-transform duration-[1400ms] ease-out-quart group-hover:scale-[1.04]"
+                    className="size-full object-cover saturate-[0.8] transition-[transform,filter] duration-[1400ms] ease-out-quart group-hover:scale-[1.06] group-hover:saturate-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-transparent to-ink/30" />
-                  <span className="absolute left-5 top-5 font-display text-lg text-paper/90 tabular" aria-hidden="true">
+                  <span className="absolute left-5 top-5 flex items-center gap-3 font-display text-lg text-paper/90 tabular" aria-hidden="true">
+                    <span className="size-[6px] bg-brand transition-transform duration-700 ease-out-expo group-hover:rotate-90" />
                     {String(i + 1).padStart(2, "0")}
                   </span>
                 </div>

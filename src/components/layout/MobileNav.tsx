@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { addressLine, formatSlots, navigation, site } from "@/content/site";
 import { cn } from "@/lib/cn";
 import { ButtonLink } from "@/components/ui/Button";
@@ -10,9 +10,13 @@ import { CloseIcon, MenuIcon } from "@/components/ui/Icons";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
 
+/** Stagger index for the line-by-line entrance (globals.css → .menu-rise / .menu-fade). */
+const stagger = (i: number) => ({ "--i": i }) as CSSProperties;
+
 /**
  * Full-screen mobile menu (< 1280px) built on the native modal <dialog>:
  * focus is trapped and the page behind is inert, Esc closes, focus returns to the toggle.
+ * Items rise line by line in big italic serif on ink with a faint red glow.
  */
 export function MobileNav() {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -71,7 +75,7 @@ export function MobileNav() {
         <MenuIcon className="size-6" />
       </button>
 
-      <dialog ref={dialogRef} id="mobile-menu" aria-label="Menü" className="menu-dialog tone-dark xl:hidden">
+      <dialog ref={dialogRef} id="mobile-menu" aria-label="Menü" className="menu-dialog tone-dark xl:hidden" data-lenis-prevent="">
         <div className="flex min-h-full flex-col">
           <Container className="flex h-header shrink-0 items-center justify-between border-b border-line">
             <Link href="/" onClick={close} className="-m-2 inline-flex min-h-11 items-center p-2 text-fg" aria-label="Castellana Automobile AG – zur Startseite">
@@ -94,24 +98,26 @@ export function MobileNav() {
                 {navigation.map((item, index) => {
                   const active = pathname.startsWith(item.href);
                   return (
-                    <li key={item.href} className="border-b border-line">
+                    <li key={item.href} className="border-b border-line" style={stagger(index)}>
                       <Link
                         href={item.href}
                         onClick={close}
                         aria-current={active ? "page" : undefined}
                         className="group flex min-h-14 items-baseline gap-5 py-2.5 sm:min-h-16 sm:py-3"
                       >
-                        <span className="w-6 text-[0.6875rem] font-medium text-subtle tabular">
+                        <span className="menu-fade w-6 text-[0.6875rem] font-medium text-subtle tabular">
                           {String(index + 1).padStart(2, "0")}
                         </span>
-                        <span
-                          className={cn(
-                            "font-display text-[2rem] leading-none tracking-tight transition-colors sm:text-5xl",
-                            active ? "text-fg" : "text-fg/80 group-hover:text-fg",
-                          )}
-                        >
-                          {item.label}
-                          {active && <span aria-hidden="true" className="ml-3 inline-block size-2 -translate-y-1 bg-brand align-middle" />}
+                        <span className="menu-line">
+                          <span
+                            className={cn(
+                              "menu-rise inline-block font-display text-[2.375rem] italic leading-[1.05] tracking-tight transition-[color,translate] duration-500 ease-out-expo group-hover:translate-x-2 sm:text-6xl",
+                              active ? "text-fg" : "text-fg/75 group-hover:text-fg",
+                            )}
+                          >
+                            {item.label}
+                            {active && <span aria-hidden="true" className="ml-3 inline-block size-2 -translate-y-1 bg-brand align-middle" />}
+                          </span>
                         </span>
                       </Link>
                     </li>
@@ -120,7 +126,7 @@ export function MobileNav() {
               </ul>
             </nav>
 
-            <div className="grid gap-8 text-sm sm:grid-cols-2">
+            <div className="menu-fade grid gap-8 text-sm sm:grid-cols-2" style={stagger(navigation.length)}>
               <div className="space-y-1.5">
                 <a href={site.phone.href} className="block font-display text-3xl tracking-tight text-fg tabular">
                   {site.phone.display}
