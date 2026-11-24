@@ -1,0 +1,772 @@
+/* ==========================================================================
+   Home hero — intro sequence + living hero (src/components/intro, Hero.tsx)
+   --------------------------------------------------------------------------
+   State on <html> (set by the inline controller, see controller.ts):
+     data-intro="running|done"             public hook — absent for returning visitors
+     data-intro-seq="wait|play|skip|end"    internal — only present when the intro plays
+   Without data-intro-seq (returning visitor, reduced motion, no JS) the hero uses the
+   quick fades below. Everything animates transform / opacity only.
+   ========================================================================== */
+
+.hx-hero {
+  --hx-skew: -12deg; /* slant of the light sweep */
+  --hx-ink: #0b0b0d;
+  --hx-cold: 220 233 255; /* #DCE9FF */
+  --hx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hx-ease-quart: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Stage & layers
+   -------------------------------------------------------------------------- */
+
+.hx-stage {
+  position: absolute;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  background: var(--hx-ink);
+}
+
+.hx-scene,
+.hx-washes,
+.hx-scrolldark,
+.hx-dolly,
+.hx-fill {
+  position: absolute;
+  inset: 0;
+}
+
+.hx-scrolldark {
+  background: var(--hx-ink);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Parallax planes: oversized so ±1.5–2.5 % never shows an edge. Each is a size container, so
+   the rendered image rect (object-fit: cover, object-position 62% 50%) can be computed in CSS
+   with container query units — the light rig stays glued to the headlights on every viewport. */
+.hx-par {
+  position: absolute;
+  inset: -3%;
+  container-type: size;
+  /* natural aspect of the hero photo (2560×1707) and its headlights in image % (measured) */
+  --ar: 1.49971;
+  --lamp-x: 47.9;
+  --lamp-y: 48.9;
+  --far-x: 16.45;
+  --far-y: 48.4;
+  --fog-x: -4%;
+  --fog-w: 66%;
+  --rw: max(100cqw, 100cqh * var(--ar));
+  --rh: max(100cqh, 100cqw / var(--ar));
+  --rx: calc((100cqw - var(--rw)) * 0.62);
+  --ry: calc((100cqh - var(--rh)) * 0.5);
+}
+
+@media (max-width: 767px) {
+  .hx-hero {
+    --hx-skew: -6deg;
+  }
+
+  .hx-par {
+    /* portrait crop (1080×1440): only the near headlight is in frame */
+    --ar: 0.75;
+    --lamp-x: 25.7;
+    --fog-x: -14%;
+    --fog-w: 96%;
+  }
+}
+
+.hx-par--flare {
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.hx-dolly {
+  /* the camera pulls back from the near headlight */
+  transform-origin: calc(var(--rx) + var(--rw) * var(--lamp-x) / 100) calc(var(--ry) + var(--rh) * var(--lamp-y) / 100);
+}
+
+/* Images are laid out at the full rendered rect (not cropped to the plane) so the intro camera can
+   pan without revealing an edge; the stage clips. Same box as .hx-rig. */
+.hx-frame {
+  position: absolute;
+  left: var(--rx);
+  top: var(--ry);
+  width: var(--rw);
+  height: var(--rh);
+  max-width: none;
+}
+
+/* The rendered image rect */
+.hx-rig {
+  position: absolute;
+  left: var(--rx);
+  top: var(--ry);
+  width: var(--rw);
+  height: var(--rh);
+  pointer-events: none;
+}
+
+/* Lights-only layer (scripts/hero-variants.mjs): the photo's own lamps, beams and DRL on black */
+.hx-lights {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0.3;
+}
+
+/* --------------------------------------------------------------------------
+   Headlight rig (positions in % of the rendered image)
+   -------------------------------------------------------------------------- */
+
+.hx-lamp {
+  position: absolute;
+  left: calc(var(--lamp-x) * 1%);
+  top: calc(var(--lamp-y) * 1%);
+  width: 30%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  mix-blend-mode: screen;
+  mix-blend-mode: plus-lighter;
+  opacity: 0.3;
+}
+
+.hx-lamp--far {
+  left: calc(var(--far-x) * 1%);
+  top: calc(var(--far-y) * 1%);
+  width: 19%;
+}
+
+.hx-glow,
+.hx-glow::before,
+.hx-glow::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+/* wide, soft halo */
+.hx-glow {
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--hx-cold) / 0.5) 0%,
+    rgb(var(--hx-cold) / 0.3) 10%,
+    rgb(var(--hx-cold) / 0.12) 28%,
+    rgb(190 214 255 / 0.045) 55%,
+    transparent 100%
+  );
+}
+
+/* bloom around the lens */
+.hx-glow::before {
+  content: "";
+  inset: 30%;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.7) 0%, rgb(var(--hx-cold) / 0.4) 35%, rgb(var(--hx-cold) / 0.1) 70%, transparent 100%);
+}
+
+/* hot core */
+.hx-glow::after {
+  content: "";
+  inset: 42%;
+  background: radial-gradient(closest-side, #fff 0%, rgb(255 255 255 / 0.9) 35%, rgb(var(--hx-cold) / 0.35) 70%, transparent 100%);
+}
+
+/* Beam cone to the left — conic wedge from the lamp, fading with distance */
+.hx-beam {
+  position: absolute;
+  right: calc(100% - var(--lamp-x) * 1%);
+  top: calc(var(--lamp-y) * 1%);
+  width: calc(var(--lamp-x) * 1%);
+  height: 56%;
+  translate: 0 -50%;
+  mix-blend-mode: screen;
+  opacity: 0.22;
+  background: conic-gradient(
+    from 243deg at 100% 50%,
+    transparent 0deg,
+    rgb(var(--hx-cold) / 0.12) 7deg,
+    rgb(var(--hx-cold) / 0.42) 14deg,
+    rgb(235 243 255 / 0.55) 17deg,
+    rgb(var(--hx-cold) / 0.3) 21deg,
+    transparent 32deg
+  );
+  -webkit-mask-image: linear-gradient(to left, #000 4%, rgb(0 0 0 / 0.55) 38%, transparent 96%);
+  mask-image: linear-gradient(to left, #000 4%, rgb(0 0 0 / 0.55) 38%, transparent 96%);
+}
+
+.hx-beam--far {
+  right: calc(100% - var(--far-x) * 1%);
+  top: calc(var(--far-y) * 1%);
+  width: calc(var(--far-x) * 1%);
+  height: 26%;
+  background: conic-gradient(
+    from 244deg at 100% 50%,
+    transparent 0deg,
+    rgb(var(--hx-cold) / 0.12) 7deg,
+    rgb(var(--hx-cold) / 0.4) 14deg,
+    rgb(235 243 255 / 0.5) 17deg,
+    rgb(var(--hx-cold) / 0.28) 21deg,
+    transparent 32deg
+  );
+}
+
+/* Anamorphic streak (flare plane, drifts against the photo on pointer parallax) */
+.hx-streak {
+  position: absolute;
+  left: calc(var(--lamp-x) * 1%);
+  top: calc(var(--lamp-y) * 1%);
+  width: 96%;
+  height: 3.6%;
+  translate: -50% -50%;
+  opacity: 0.12;
+  background: radial-gradient(
+    closest-side,
+    rgb(235 243 255 / 0.7) 0%,
+    rgb(160 198 255 / 0.3) 18%,
+    rgb(110 160 255 / 0.09) 50%,
+    transparent 100%
+  );
+}
+
+/* the thin anamorphic line, tapering out on both sides */
+.hx-streak::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: calc(50% - 0.75px);
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(150 190 255 / 0.25) 22%,
+    rgb(235 243 255 / 0.8) 50%,
+    rgb(150 190 255 / 0.25) 78%,
+    transparent
+  );
+}
+
+.hx-streak--far {
+  left: calc(var(--far-x) * 1%);
+  top: calc(var(--far-y) * 1%);
+  width: 52%;
+  height: 2.4%;
+}
+
+/* Floor fog where the beams hit the ground */
+.hx-fog {
+  position: absolute;
+  left: var(--fog-x);
+  top: 56%;
+  width: var(--fog-w);
+  height: 34%;
+  mix-blend-mode: screen;
+  background: radial-gradient(closest-side, rgb(165 195 230 / 0.17), rgb(140 170 210 / 0.06) 55%, transparent 100%);
+}
+
+/* Dust in the near beam, just ahead of the lens: a masked dot field that drifts and, every now
+   and then, catches the light. */
+.hx-dust {
+  position: absolute;
+  right: calc(100% - (var(--lamp-x) - 1.5) * 1%);
+  top: calc((var(--lamp-y) + 2.2) * 1%);
+  width: 17%;
+  height: 15%;
+  translate: 0 -50%;
+  rotate: -9deg;
+  overflow: hidden;
+  mix-blend-mode: screen;
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(ellipse 60% 46% at 64% 50%, #000 35%, rgb(0 0 0 / 0.6) 65%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 46% at 64% 50%, #000 35%, rgb(0 0 0 / 0.6) 65%, transparent 100%);
+}
+
+.hx-dust::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  background-image:
+    radial-gradient(circle at 18% 32%, #fff 0 1.4px, transparent 2.4px),
+    radial-gradient(circle at 63% 71%, rgb(255 255 255 / 0.9) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 82% 22%, rgb(var(--hx-cold)) 0 1.7px, transparent 2.8px),
+    radial-gradient(circle at 41% 88%, rgb(255 255 255 / 0.8) 0 0.9px, transparent 1.8px);
+  background-size:
+    67px 53px,
+    43px 47px,
+    91px 79px,
+    31px 37px;
+}
+
+/* --------------------------------------------------------------------------
+   Intro-only layers
+   Darkness wedge — geometry (W = plane width): the element spans [-4W, 2.5W]; its transparent →
+   ink ramp sits at local 3.0W–3.6W, i.e. on screen at [-1.0W, -0.4W]. translateX(35.38 %) = 2.3W
+   wipes it past the right edge with margin for the slant (also on tall mobile heroes).
+   Light pass — a plane-sized band (mask) leading the ramp; the photo inside is counter-transformed
+   (skew⁻¹ · translate⁻¹) so it stays registered with the scene.
+   -------------------------------------------------------------------------- */
+
+.hx-shade,
+.hx-sweep {
+  display: none;
+  pointer-events: none;
+}
+
+.hx-shade {
+  position: absolute;
+  top: -6%;
+  bottom: -6%;
+  left: -400%;
+  width: 650%;
+  transform: translate3d(35.38%, 0, 0) skewX(var(--hx-skew));
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 46.15%,
+    rgb(11 11 13 / 0.3) 48.6%,
+    rgb(11 11 13 / 0.66) 51.4%,
+    rgb(11 11 13 / 0.9) 53.4%,
+    var(--hx-ink) 55.38%
+  );
+}
+
+.hx-sweep {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate3d(130%, 0, 0) skewX(var(--hx-skew));
+  -webkit-mask-image: linear-gradient(90deg, transparent 30%, rgb(0 0 0 / 0.55) 40%, #000 47%, #000 53%, rgb(0 0 0 / 0.55) 60%, transparent 70%);
+  mask-image: linear-gradient(90deg, transparent 30%, rgb(0 0 0 / 0.55) 40%, #000 47%, #000 53%, rgb(0 0 0 / 0.55) 60%, transparent 70%);
+}
+
+.hx-sweep-inner {
+  transform: skewX(calc(var(--hx-skew) * -1)) translate3d(-130%, 0, 0);
+  filter: brightness(1.25) contrast(1.06);
+}
+
+/* a breath of lit air inside the band */
+.hx-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--hx-cold) / 0.045);
+}
+
+html[data-intro-seq="wait"] .hx-shade,
+html[data-intro-seq="play"] .hx-shade,
+html[data-intro-seq="skip"] .hx-shade,
+html[data-intro-seq="wait"] .hx-sweep,
+html[data-intro-seq="play"] .hx-sweep,
+html[data-intro-seq="skip"] .hx-sweep {
+  display: block;
+}
+
+/* Trust strip hairline (drawn left → right in the intro) */
+.hx-rule {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--tone-line, rgb(244 242 238 / 0.12));
+  transform-origin: left;
+}
+
+/* --------------------------------------------------------------------------
+   Headline line masks
+   -------------------------------------------------------------------------- */
+
+.hx-mask,
+.hx-word {
+  display: inline-block;
+}
+
+html[data-intro-seq="wait"] .hx-mask,
+html[data-intro-seq="play"] .hx-mask,
+html[data-intro-seq="skip"] .hx-mask {
+  /* generous on top/sides for ascenders and the italic overhang; tight at the bottom so nothing
+     peeks out before the word rises (no descenders in this headline) */
+  clip-path: inset(-0.3em -0.2em -0.05em -0.2em);
+}
+
+/* --------------------------------------------------------------------------
+   Pre-T0 state (html[data-intro-seq="wait"]): ink, lights off, copy hidden.
+   From T0 the Web Animations in timeline.ts hold these values until their delay.
+   -------------------------------------------------------------------------- */
+
+html[data-intro-seq="wait"] .hx-shade {
+  opacity: 0.955;
+  transform: translate3d(0, 0, 0) skewX(var(--hx-skew));
+}
+
+html[data-intro-seq="wait"] :is(.hx-lights, .hx-lamp, .hx-streak, .hx-beam, .hx-fog, .hx-washes, .hx-sweep) {
+  opacity: 0;
+}
+
+/* 0.5 %, not 0: invisible but painted, so LCP is not pushed back to the reveal (= HIDDEN in timeline.ts) */
+html[data-intro-seq="wait"] :is([data-hx="eyebrow"], [data-hx="lead"], [data-hx="cta"], [data-hx="trust"]) {
+  opacity: 0.005;
+}
+
+html[data-intro-seq="wait"] .hx-word {
+  transform: translate3d(0, 135%, 0);
+}
+
+html[data-intro-seq="wait"] [data-hx="rule"] {
+  transform: scaleX(0);
+}
+
+html[data-intro-seq="wait"] .hx-dolly {
+  scale: 1.1;
+}
+
+@media (max-width: 767px) {
+  html[data-intro-seq="wait"] .hx-dolly {
+    /* = PAN in timeline.ts */
+    translate: min(35cqw, (max(100cqw, 75cqh) - 100cqw) * 0.62) 0;
+  }
+}
+
+/* No stray clicks on invisible links while the sequence runs (a click skips it instead). */
+html[data-intro-seq="wait"] .hx-copy,
+html[data-intro-seq="play"] .hx-copy {
+  pointer-events: none;
+}
+
+/* Skip: hand over from the committed in-flight values to the final state. */
+html[data-intro-seq="skip"] :is([data-hx], .hx-word) {
+  transition:
+    opacity 0.85s var(--hx-ease),
+    transform 0.85s var(--hx-ease),
+    translate 0.85s var(--hx-ease),
+    scale 0.85s var(--hx-ease);
+  transition-delay: calc(var(--i, 0) * 45ms);
+}
+
+/* --------------------------------------------------------------------------
+   «Überspringen» control (only while the intro runs)
+   -------------------------------------------------------------------------- */
+
+.hx-skip {
+  position: fixed;
+  right: var(--spacing-gutter, 1.25rem);
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: none;
+  min-height: 44px;
+  min-width: 44px;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: rgb(244 242 238 / 0.62);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.hx-skip:hover,
+.hx-skip:focus-visible {
+  color: rgb(244 242 238);
+}
+
+.hx-skip-bar {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 1px;
+  overflow: hidden;
+  background: rgb(244 242 238 / 0.16);
+}
+
+.hx-skip-bar > span {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+html[data-intro="running"] .hx-skip {
+  display: flex;
+  animation: hx-skip-in 0.7s var(--hx-ease) 0.3s both;
+}
+
+@keyframes hx-skip-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Scroll cue (≥ md): thin line drawing down, «Scrollen»; gone after the first scroll
+   -------------------------------------------------------------------------- */
+
+.hx-cue {
+  position: absolute;
+  right: calc(max(0px, (100vw - 86rem) / 2) + var(--spacing-gutter, 3rem) / 2);
+  bottom: 3rem;
+  z-index: 1;
+  display: none;
+  translate: 50% 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  color: rgb(244 242 238 / 0.55);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s var(--hx-ease);
+}
+
+@media (min-width: 768px) {
+  .hx-cue {
+    display: flex;
+  }
+}
+
+.hx-cue-label {
+  writing-mode: vertical-rl;
+}
+
+.hx-cue-line {
+  position: relative;
+  width: 1px;
+  height: 3.5rem;
+  overflow: hidden;
+  background: rgb(244 242 238 / 0.14);
+}
+
+.hx-cue-line > span {
+  position: absolute;
+  inset: 0;
+  background: rgb(244 242 238 / 0.85);
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+html:not([data-intro="running"]) .hx-hero:not([data-scrolled]) .hx-cue {
+  opacity: 1;
+  transition-delay: 0.9s;
+}
+
+/* --------------------------------------------------------------------------
+   Motion: quick fades (no intro), idle life, scroll choreography
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Returning visitors / no JS: the former quick hero fades */
+  html:not([data-intro-seq]) .hx-fade {
+    animation: hx-fade 1.2s var(--hx-ease-quart) both;
+    animation-delay: var(--fade-delay, 0ms);
+  }
+
+  html:not([data-intro-seq]) .hx-dolly {
+    animation: hx-settle 2.4s var(--hx-ease-quart) both;
+  }
+
+  html:not([data-intro-seq]) .hx-lights {
+    animation: hx-lights-on 1.8s ease-out 0.25s both;
+  }
+
+  /* Idle: headlights breathe, dust catches the beam now and then */
+  .hx-breathe {
+    animation: hx-breathe 7s ease-in-out infinite alternate;
+  }
+
+  .hx-lamp .hx-breathe {
+    animation-duration: 8.4s;
+    animation-delay: -2.6s;
+  }
+
+  .hx-dust {
+    animation: hx-dust-shimmer 11s ease-in-out 3s infinite;
+  }
+
+  .hx-dust::before {
+    animation: hx-dust-drift 26s linear infinite alternate;
+  }
+
+  .hx-cue-line > span {
+    animation: hx-cue 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  html[data-intro="running"] :is(.hx-breathe, .hx-dust),
+  html[data-intro="running"] .hx-dust::before {
+    animation-play-state: paused;
+  }
+}
+
+.hx-breathe {
+  position: absolute;
+  inset: 0;
+}
+
+@keyframes hx-fade {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+}
+
+@keyframes hx-settle {
+  from {
+    scale: 1.06;
+    opacity: 0.4;
+  }
+}
+
+@keyframes hx-lights-on {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes hx-breathe {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.74;
+  }
+}
+
+@keyframes hx-dust-shimmer {
+  0%,
+  55%,
+  100% {
+    opacity: 0;
+  }
+  66% {
+    opacity: 0.75;
+  }
+  74% {
+    opacity: 0.3;
+  }
+  84% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes hx-dust-drift {
+  from {
+    transform: translate3d(-6%, 3%, 0);
+  }
+  to {
+    transform: translate3d(6%, -4%, 0);
+  }
+}
+
+@keyframes hx-cue {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  45% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+/* Scroll-out: photo pushes in and darkens, copy lags behind (depth), trust strip fades. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .hx-hero {
+      view-timeline-name: --hx-hero;
+      view-timeline-axis: block;
+    }
+
+    .hx-scene,
+    .hx-scrolldark,
+    .hx-scroll-copy,
+    .hx-scroll-trust {
+      animation-duration: 1ms;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --hx-hero;
+      animation-range: exit 0% exit 100%;
+    }
+
+    .hx-scene {
+      animation-name: hx-scroll-zoom;
+    }
+
+    .hx-scrolldark {
+      animation-name: hx-scroll-dark;
+    }
+
+    .hx-scroll-copy {
+      animation-name: hx-scroll-copy;
+    }
+
+    .hx-scroll-trust {
+      animation-name: hx-scroll-trust;
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    .hx-scene {
+      scale: calc(1 + var(--hx-p, 0) * 0.08);
+    }
+
+    .hx-scrolldark {
+      opacity: calc(var(--hx-p, 0) * 0.7);
+    }
+
+    .hx-scroll-copy {
+      translate: 0 calc(var(--hx-p, 0) * 35%);
+      opacity: calc(1 - var(--hx-p, 0) * 1.6);
+    }
+
+    .hx-scroll-trust {
+      opacity: calc(1 - var(--hx-p, 0) * 3);
+    }
+  }
+}
+
+@keyframes hx-scroll-zoom {
+  to {
+    scale: 1.08;
+  }
+}
+
+@keyframes hx-scroll-dark {
+  to {
+    opacity: 0.7;
+  }
+}
+
+@keyframes hx-scroll-copy {
+  60%,
+  to {
+    opacity: 0;
+  }
+  to {
+    translate: 0 35%;
+  }
+}
+
+@keyframes hx-scroll-trust {
+  35%,
+  to {
+    opacity: 0;
+  }
+}
